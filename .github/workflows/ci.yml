@@ -1,0 +1,56 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - 'feature/**'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      # This password is for the database that 'supabase db push --dry-run' will simulate against.
+      # For a true dry-run, it may use an ephemeral local DB with a default password, or a dedicated CI DB.
+      # Ensure this secret is set in GitHub repo settings if a non-default password is required by the dry-run process.
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_CI_DB_PASSWORD }} # Recommended to use a dedicated CI DB password secret
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Specify your project's Node.js version
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Linters
+        run: npm run lint
+
+      - name: Run Tests # Placeholder - ensure your test script exists and passes
+        run: npm test 
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest # Consider pinning to a specific version for stability
+
+      - name: Supabase Schema Dry Run
+        run: |
+          echo "Attempting Supabase DB push dry-run..."
+          # The db push --dry-run command checks if migrations apply cleanly.
+          # It may require SUPABASE_DB_PASSWORD if it needs to connect to a shadow/temporary DB.
+          if [ -z "$SUPABASE_DB_PASSWORD" ]; then
+            echo "Warning: SUPABASE_CI_DB_PASSWORD secret is not set. Dry run might use default credentials or fail if specific ones are needed."
+            # Allowing to proceed, as dry-run with default local credentials might work for some setups.
+          fi
+          supabase db push --dry-run 
