@@ -46,6 +46,8 @@ jobs:
 
       - name: Supabase Schema Dry Run
         run: |
+          echo "Initializing Supabase locally in CI..."
+          supabase init
           echo "Attempting Supabase DB push dry-run..."
           # The db push --dry-run command checks if migrations apply cleanly.
           # It may require SUPABASE_DB_PASSWORD if it needs to connect to a shadow/temporary DB.
