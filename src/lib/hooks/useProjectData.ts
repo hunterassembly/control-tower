@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
 export interface ProjectWithMember {
@@ -44,13 +45,34 @@ export function useProject(projectId: string) {
   return useQuery({
     queryKey: ['project', projectId],
     queryFn: async (): Promise<ProjectWithMember> => {
+      console.log('🔍 [useProject] Starting project fetch for:', projectId);
+      
+      // Check current session first
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      console.log('🔍 [useProject] Current session:', {
+        hasSession: !!session,
+        sessionError,
+        userId: session?.user?.id,
+        userEmail: session?.user?.email,
+        accessToken: session?.access_token ? 'present' : 'missing'
+      });
+
       // First get the current user
       const { data: { user }, error: authError } = await supabase.auth.getUser();
+      console.log('🔍 [useProject] Auth user result:', {
+        hasUser: !!user,
+        authError,
+        userId: user?.id,
+        userEmail: user?.email
+      });
+      
       if (authError || !user) {
+        console.error('❌ [useProject] Authentication failed:', { authError, user });
         throw new Error('Authentication required');
       }
 
       // Get user's membership info for this project
+      console.log('🔍 [useProject] Querying membership for:', { projectId, userId: user.id });
       const { data: membershipData, error: membershipError } = await supabase
         .from('project_member')
         .select('user_id, role')
@@ -58,22 +80,37 @@ export function useProject(projectId: string) {
         .eq('user_id', user.id)
         .single();
 
+      console.log('🔍 [useProject] Membership query result:', {
+        membershipData,
+        membershipError,
+        hasData: !!membershipData
+      });
+
       if (membershipError || !membershipData) {
+        console.error('❌ [useProject] Membership check failed:', { membershipError, membershipData });
         throw new Error('Project not found or access denied');
       }
 
       // Get project details separately
+      console.log('🔍 [useProject] Querying project data for:', projectId);
       const { data: projectData, error: projectError } = await supabase
         .from('project')
         .select('id, name, description, created_at, updated_at')
         .eq('id', projectId)
         .single();
 
+      console.log('🔍 [useProject] Project query result:', {
+        projectData,
+        projectError,
+        hasData: !!projectData
+      });
+
       if (projectError || !projectData) {
+        console.error('❌ [useProject] Project fetch failed:', { projectError, projectData });
         throw new Error(`Failed to fetch project: ${projectError?.message || 'Project not found'}`);
       }
       
-      return {
+      const result = {
         id: projectData.id,
         name: projectData.name,
         description: projectData.description,
@@ -82,6 +119,9 @@ export function useProject(projectId: string) {
         user_role: membershipData.role,
         user_id: membershipData.user_id,
       };
+      
+      console.log('✅ [useProject] Successfully fetched project:', result);
+      return result;
     },
     enabled: !!projectId,
   });
@@ -94,14 +134,33 @@ export function useProjectTasks(projectId: string) {
   return useQuery({
     queryKey: ['project-tasks', projectId],
     queryFn: async (): Promise<TasksByStatus> => {
+      console.log('🔍 [useProjectTasks] Starting tasks fetch for:', projectId);
+      
+      // Check auth state for tasks query
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      console.log('🔍 [useProjectTasks] Auth check:', {
+        hasUser: !!user,
+        authError,
+        userId: user?.id,
+        userEmail: user?.email
+      });
+
       // Get basic task data first
+      console.log('🔍 [useProjectTasks] Querying tasks for project:', projectId);
       const { data: tasks, error: tasksError } = await supabase
         .from('task')
         .select('*')
         .eq('project_id', projectId)
         .order('position', { ascending: true });
 
+      console.log('🔍 [useProjectTasks] Tasks query result:', {
+        tasksCount: tasks?.length || 0,
+        tasksError,
+        hasData: !!tasks
+      });
+
       if (tasksError) {
+        console.error('❌ [useProjectTasks] Tasks fetch failed:', tasksError);
         throw new Error(`Failed to fetch tasks: ${tasksError.message}`);
       }
 
@@ -206,4 +265,51 @@ export function useTaskCounts(projectId: string) {
   const total = active + tasks.backlog.length + tasks.completed.length;
   
   return { active, total };
+}
+
+/**
+ * Debug hook to track auth state and session info
+ */
+export function useAuthDebug() {
+  const [authState, setAuthState] = useState<any>(null);
+  
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      const state = {
+        timestamp: new Date().toISOString(),
+        session: {
+          hasSession: !!session,
+          sessionError,
+          userId: session?.user?.id,
+          userEmail: session?.user?.email,
+          accessToken: session?.access_token ? 'present' : 'missing',
+          expiresAt: session?.expires_at
+        },
+        user: {
+          hasUser: !!user,
+          userError,
+          userId: user?.id,
+          userEmail: user?.email
+        }
+      };
+      
+      console.log('🔍 [useAuthDebug] Current auth state:', state);
+      setAuthState(state);
+    };
+    
+    checkAuth();
+    
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('🔐 [useAuthDebug] Auth state changed:', { event, session });
+      checkAuth();
+    });
+    
+    return () => subscription.unsubscribe();
+  }, []);
+  
+  return authState;
 } 

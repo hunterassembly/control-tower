@@ -5,7 +5,33 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = 'http://127.0.0.1:54321';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+console.log('🔧 [Supabase] Initializing client with:', {
+  url: supabaseUrl,
+  hasAnonKey: !!supabaseAnonKey,
+  anonKeyLength: supabaseAnonKey.length
+});
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    debug: true, // Enable auth debugging
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true
+  }
+});
+
+// Add global debugging for auth state changes
+supabase.auth.onAuthStateChange((event, session) => {
+  console.log('🔐 [Supabase Auth] State change:', {
+    event,
+    hasSession: !!session,
+    userId: session?.user?.id,
+    userEmail: session?.user?.email,
+    accessToken: session?.access_token ? 'present' : 'missing',
+    refreshToken: session?.refresh_token ? 'present' : 'missing',
+    expiresAt: session?.expires_at
+  });
+});
 
 // Database types (these would normally be generated)
 export interface Database {

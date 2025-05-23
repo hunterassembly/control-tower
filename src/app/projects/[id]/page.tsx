@@ -1,7 +1,7 @@
 'use client';
 
 import { use } from 'react';
-import { useProject, useProjectTasks, useTaskCounts, TaskWithDetails } from '@/lib/hooks/useProjectData';
+import { useProject, useProjectTasks, useTaskCounts, useAuthDebug, TaskWithDetails } from '@/lib/hooks/useProjectData';
 
 /**
  * Main Project Page - Primary workspace where users land after authentication
@@ -136,6 +136,10 @@ export default function ProjectPage({ params }: ProjectPageProps) {
   // Fix for Next.js 15: unwrap params Promise using React.use()
   const { id: projectId } = use(params);
   
+  // Debug auth state
+  const authDebug = useAuthDebug();
+  console.log('🔍 [ProjectPage] Auth debug state:', authDebug);
+  
   // Fetch project and task data
   const { data: project, isLoading: projectLoading, error: projectError } = useProject(projectId);
   const { data: tasks, isLoading: tasksLoading, error: tasksError } = useProjectTasks(projectId);
@@ -162,9 +166,10 @@ export default function ProjectPage({ params }: ProjectPageProps) {
           </p>
           <details className="mt-4 text-left">
             <summary className="cursor-pointer text-sm text-muted">Debug Info</summary>
-            <pre className="mt-2 text-xs bg-gray-100 p-2 rounded">
-              Project Error: {JSON.stringify(projectError, null, 2)}
-              Tasks Error: {JSON.stringify(tasksError, null, 2)}
+            <pre className="mt-2 text-xs bg-gray-100 p-2 rounded overflow-auto max-h-96">
+              <strong>Project Error:</strong> {JSON.stringify(projectError, null, 2)}
+              <strong>Tasks Error:</strong> {JSON.stringify(tasksError, null, 2)}
+              <strong>Auth Debug:</strong> {JSON.stringify(authDebug, null, 2)}
             </pre>
           </details>
         </div>

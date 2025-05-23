@@ -21,6 +21,10 @@ This document is the shared brain-dump playground for both Planner and Executor 
 _Add new items to the list below as `- [YYYY-MM-DD] Your wisdom here`_
 
 - [2025-05-19] Initial project scaffolding created by Planner.
+- [2025-01-27] 400 API errors during development are often EXPECTED SECURITY BEHAVIOR when authentication is required. Always check if user needs to login first at `/login` before assuming there's a bug.
+- [2025-01-27] When users successfully authenticate but get "access denied" errors, check if they have project_member records. Successful auth ≠ project access. Use: `psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -c "SELECT pm.role, au.email FROM project_member pm JOIN auth.users au ON pm.user_id = au.id;"`
+- [2025-01-27] Always verify the correct port for Next.js dev server with `lsof -i :3000` - don't assume port numbers. Default is 3000, not 3001!
+- [2025-01-27] When auth issues are complex, add comprehensive debugging FIRST: console logs in hooks, visual debug displays, and auth state monitoring. This saves hours of guessing. Use prefixed emojis (🔍, 🔐, ✅, ❌) for easy filtering.
 
 ### Master Project Board (Overall Ordering & Status)
 
