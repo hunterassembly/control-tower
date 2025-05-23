@@ -165,13 +165,24 @@ export function LoginForm({
         if (event === 'SIGNED_IN' && session) {
           console.log('✅ User signed in:', session.user.email)
           
-          // Check for invite token in URL
-          const inviteToken = searchParams.get('invite_token')
-          console.log('🔍 DEBUG - Invite token after auth:', inviteToken)
+          // Check for invite token in localStorage first, then URL as fallback
+          let inviteToken = localStorage.getItem('pending-invite-token')
+          if (!inviteToken) {
+            inviteToken = searchParams.get('invite_token')
+          }
+          
+          console.log('🔍 DEBUG - Invite token from localStorage:', localStorage.getItem('pending-invite-token'))
+          console.log('🔍 DEBUG - Invite token from URL:', searchParams.get('invite_token'))
+          console.log('🔍 DEBUG - Final invite token to process:', inviteToken)
           console.log('🔍 DEBUG - All search params:', Object.fromEntries(searchParams.entries()))
           
           if (inviteToken) {
             console.log('🎯 Processing invite token:', inviteToken)
+            
+            // Clear the token from localStorage to prevent reuse
+            localStorage.removeItem('pending-invite-token')
+            console.log('🗑️ Cleared invite token from localStorage')
+            
             setMessage({
               type: "info",
               text: "🔄 Verifying your invitation..."
@@ -257,11 +268,15 @@ export function LoginForm({
       const inviteToken = searchParams.get('invite_token')
       console.log('🔍 DEBUG - Invite token from URL:', inviteToken)
       
-      // Construct redirect URL with invite token preserved
+      // Store invite token in localStorage if present (survives the magic link redirect)
+      if (inviteToken) {
+        localStorage.setItem('pending-invite-token', inviteToken)
+        console.log('💾 Stored invite token in localStorage:', inviteToken)
+      }
+      
+      // Construct redirect URL - just go to /login (simpler, more reliable)
       const baseUrl = window.location.origin
-      const redirectUrl = inviteToken 
-        ? `${baseUrl}/login?invite_token=${inviteToken}`
-        : `${baseUrl}/login`
+      const redirectUrl = `${baseUrl}/login`
       
       console.log('🔍 DEBUG - Base URL:', baseUrl)
       console.log('🔍 DEBUG - Constructed redirect URL:', redirectUrl)
