@@ -37,6 +37,7 @@ _Add new items to the list below as `- [YYYY-MM-DD] Your wisdom here`_
 - [2025-01-27] **Planner Mode**: Always do comprehensive design analysis BEFORE starting implementation. The initial task-detail plan was way too high-level (7 tasks) vs the detailed mockup analysis (32 tasks across 8 phases). Thorough planning prevents scope creep and ensures nothing gets missed. Extract every UI element, interaction, and user flow from designs.
 - [2025-01-27] **Merge Conflicts**: When merging feature branches with different implementations of the same files (supabase.ts, projects/page.tsx), prefer the more comprehensive version that includes debugging, helper functions, and better functionality. Keep valuable pieces from both versions when possible.
 - [2025-01-27] **Successful Merge Resolution**: Project task list feature branch successfully merged to main! Key strategy: resolve conflicts systematically (supabase.ts merged helper functions, projects/page.tsx kept functional version, globals.css merged complete design system). Always remove package-lock.json conflicts and regenerate via npm install. Use git add . then git commit to complete merge.
+- [2025-01-27] **Next.js Cache Issues After Merge**: If you see JSON parsing errors with conflict markers after merging, it's usually cached files in `.next` directory. Fix: `pkill -f "next dev"`, `rm -rf .next`, then `npm run dev`. The conflict markers were cached, not actually in the files.
 
 ### Master Project Board (Overall Ordering & Status)
 
