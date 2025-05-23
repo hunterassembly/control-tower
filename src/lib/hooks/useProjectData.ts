@@ -17,7 +17,7 @@ export interface TaskWithDetails {
   project_id: string;
   title: string;
   description: string | null;
-  status: 'backlog' | 'up_next' | 'in_progress' | 'completed';
+  status: 'Backlog' | 'Up Next' | 'In Progress' | 'Approved' | 'Closed';
   assignee_id: string | null;
   created_at: string;
   updated_at: string;
@@ -241,10 +241,10 @@ export function useProjectTasks(projectId: string) {
 
       // Group by status
       const grouped: TasksByStatus = {
-        in_progress: tasksWithDetails.filter(t => t.status === 'in_progress'),
-        up_next: tasksWithDetails.filter(t => t.status === 'up_next'),
-        backlog: tasksWithDetails.filter(t => t.status === 'backlog'),
-        completed: tasksWithDetails.filter(t => t.status === 'completed'),
+        in_progress: tasksWithDetails.filter(t => t.status === 'In Progress'),
+        up_next: tasksWithDetails.filter(t => t.status === 'Up Next'),
+        backlog: tasksWithDetails.filter(t => t.status === 'Backlog'),
+        completed: tasksWithDetails.filter(t => t.status === 'Approved' || t.status === 'Closed'),
       };
 
       return grouped;

@@ -40,6 +40,7 @@ export interface Database {
       project: {
         Row: {
           id: string;
+          organization_id: string;
           name: string;
           description: string | null;
           created_at: string;
@@ -61,7 +62,7 @@ export interface Database {
           project_id: string;
           title: string;
           description: string | null;
-          status: 'backlog' | 'up_next' | 'in_progress' | 'completed';
+          status: 'Backlog' | 'Up Next' | 'In Progress' | 'Viewed' | 'Waiting' | 'Revising' | 'Approved' | 'Closed';
           assignee_id: string | null;
           created_at: string;
           updated_at: string;
