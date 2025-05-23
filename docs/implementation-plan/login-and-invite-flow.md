@@ -153,6 +153,13 @@ Authentication is the literal front door to our shiny new platform. This slice f
     - **UX Improvements**: Added emojis, clearer messaging, longer success display time, debugging logs.
     - **Testing**: Added mock function for `test-invite-123` token to test complete flow without deployed Edge Function.
     - **✅ TESTED**: User confirmed issue and solution works with proper invitation confirmation messaging.
+  - **🐛 FIXED AGAIN**: Critical issue where Supabase redirect URL restrictions were blocking invite tokens.
+    - **Root Cause**: Supabase `additional_redirect_urls` in config.toml only allowed specific URLs, rejecting dynamic query parameters.
+    - **Solution**: Implemented localStorage-based approach to preserve invite tokens across magic link redirect.
+    - **Flow**: Store token in localStorage → magic link redirects to `/login` → retrieve token from localStorage → process invitation.
+    - **Benefits**: More reliable, works regardless of URL restrictions, prevents token loss in redirects.
+    - **Updated Config**: Added `/login` to allowed redirect URLs in Supabase config.
+    - **Extensive Debugging**: Added comprehensive logging to trace token flow through the entire process.
 - **Next up**: Admin invite token generation mechanism (Task 8).
 
 ## Executor's Feedback or Assistance Requests
