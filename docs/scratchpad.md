@@ -36,12 +36,13 @@ _Add new items to the list below as `- [YYYY-MM-DD] Your wisdom here`_
 - [2025-01-27] 400 API errors that look like auth problems can actually be database schema mismatches! Always check if the code's expected columns/enums match the actual database structure. Use `\d table_name` in psql to verify schema. In this case: missing `position` column, wrong status enum values (`'Backlog'` vs `'backlog'`), and missing project columns caused all the 400s.
 - [2025-01-27] **Planner Mode**: Always do comprehensive design analysis BEFORE starting implementation. The initial task-detail plan was way too high-level (7 tasks) vs the detailed mockup analysis (32 tasks across 8 phases). Thorough planning prevents scope creep and ensures nothing gets missed. Extract every UI element, interaction, and user flow from designs.
 - [2025-01-27] **Merge Conflicts**: When merging feature branches with different implementations of the same files (supabase.ts, projects/page.tsx), prefer the more comprehensive version that includes debugging, helper functions, and better functionality. Keep valuable pieces from both versions when possible.
+- [2025-01-27] **Successful Merge Resolution**: Project task list feature branch successfully merged to main! Key strategy: resolve conflicts systematically (supabase.ts merged helper functions, projects/page.tsx kept functional version, globals.css merged complete design system). Always remove package-lock.json conflicts and regenerate via npm install. Use git add . then git commit to complete merge.
 
 ### Master Project Board (Overall Ordering & Status)
 
 - [x] ✅ 01 — Backend Foundation & Schema (`feature/backend-foundation-schema`)
 - [x] ✅ 02 — Login & Invite Flow (`feature/login-and-invite-flow`) - **CORE COMPLETE**
-- [ ] in-progress 03 — Project Task List (`feature/project-task-list`) - **MERGING NOW**
+- [x] ✅ 03 — Project Task List (`feature/project-task-list`) - **MERGED TO MAIN**
 - [ ] 04 — Projects Dashboard (`feature/projects-dashboard`) - *DEPRIORITIZED*
 - [ ] 05 — Task Detail & Updates (`feature/task-detail-and-updates`) ✅ **PLANNING COMPLETE**
 - [ ] 06 — Assets Lightbox (`feature/assets-lightbox`)
