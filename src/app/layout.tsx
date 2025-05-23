@@ -8,6 +8,7 @@ import { ThemeProvider } from 'next-themes';
 // import NavigationBar from '@/app/(delete-this-and-modify-page.tsx)/NavigationBar';
 import '@/app/globals.css';
 import { Toaster } from '@/registry/new-york-v4/ui/sonner';
+import { ReactQueryProvider } from '@/lib/react-query';
 
 const geistSans = localFont({
     src: './fonts/GeistVF.woff',
@@ -32,11 +33,13 @@ const Layout = ({ children }: Readonly<{ children: ReactNode }>) => {
         <html suppressHydrationWarning lang='en'>
             <body
                 className={`${geistSans.variable} ${geistMono.variable} bg-background text-foreground overscroll-none antialiased`}>
-                <ThemeProvider attribute='class'>
-                    {/* <NavigationBar /> */}
-                    {children}
-                    <Toaster />
-                </ThemeProvider>
+                <ReactQueryProvider>
+                    <ThemeProvider attribute='class'>
+                        {/* <NavigationBar /> */}
+                        {children}
+                        <Toaster />
+                    </ThemeProvider>
+                </ReactQueryProvider>
             </body>
         </html>
     );
