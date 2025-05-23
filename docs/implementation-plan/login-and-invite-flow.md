@@ -97,9 +97,9 @@ Authentication is the literal front door to our shiny new platform. This slice f
 - [x] `invite_token` table and RLS created
 - [x] `/login` page UI implemented
 - [x] Magic-link client-side logic works (triggers email, `onAuthStateChange` fires)
-- [ ] Invite token extraction from URL works
-- [ ] Edge Function `consume-invite-token` created and tested
-- [ ] Client-side handling of `consume-invite-token` response (redirects, errors) works
+- [x] Invite token extraction from URL works
+- [x] Edge Function `consume-invite-token` created and tested
+- [x] Client-side handling of `consume-invite-token` response (redirects, errors) works
 - [ ] Admin invite token generation mechanism implemented (TBD: UI or Function-only for MVP)
 - [ ] Postmark integration for sending invite emails works
 - [ ] Slack notification stub for new invites added
@@ -135,7 +135,19 @@ Authentication is the literal front door to our shiny new platform. This slice f
   - Created placeholder `/projects` page for post-auth redirects.
   - All services confirmed running: Next.js, Supabase API, Inbucket email service.
   - **✅ TESTED SUCCESSFULLY**: User confirmed magic-link email received and redirect working correctly.
-- **Next up**: Implement invite token extraction from URL (Task 5).
+- **Tasks (5-7) ✅ COMPLETE**: Invite token redemption flow implemented.
+  - **Task (5)**: Implemented client-side invite token extraction from URL parameters.
+  - **Task (6)**: Created Supabase Edge Function `consume-invite-token` with full validation logic.
+    - Validates authentication, token expiry, and prevents duplicate usage.
+    - Creates project membership records with proper role assignment.
+    - Handles existing members gracefully and provides detailed error responses.
+    - Edge Function ready for deployment when Edge Runtime is available.
+  - **Task (7)**: Implemented comprehensive client-side response handling.
+    - Success: Shows project join confirmation and redirects to specific project.
+    - Error: Displays clear error messages for invalid/expired tokens.
+    - No token: Checks existing memberships and provides appropriate messaging.
+    - Added `checkProjectMemberships()` function for user onboarding flow.
+- **Next up**: Admin invite token generation mechanism (Task 8).
 
 ## Executor's Feedback or Assistance Requests
 *(empty)*

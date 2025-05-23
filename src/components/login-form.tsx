@@ -32,6 +32,62 @@ export function LoginForm({
   const router = useRouter()
   const searchParams = useSearchParams()
 
+  // Function to call the consume-invite-token Edge Function
+  const consumeInviteToken = async (token: string): Promise<{ success: boolean; data?: any; error?: string }> => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session?.access_token) {
+        return { success: false, error: "No valid session found" }
+      }
+
+      // Use local development URLs directly
+      const supabaseUrl = 'http://127.0.0.1:54321'
+      const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0'
+
+      const response = await fetch(`${supabaseUrl}/functions/v1/consume-invite-token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+          'apikey': supabaseAnonKey
+        },
+        body: JSON.stringify({ invite_token: token })
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        return { success: false, error: result.error || 'Failed to redeem invite token' }
+      }
+
+      return { success: true, data: result }
+    } catch (error) {
+      console.error('Error consuming invite token:', error)
+      return { success: false, error: 'Network error occurred' }
+    }
+  }
+
+  // Function to check if user has any project memberships
+  const checkProjectMemberships = async (): Promise<{ hasMemberships: boolean; error?: string }> => {
+    try {
+      const { data, error } = await supabase
+        .from('project_member')
+        .select('project_id')
+        .limit(1)
+
+      if (error) {
+        console.error('Error checking memberships:', error)
+        return { hasMemberships: false, error: error.message }
+      }
+
+      return { hasMemberships: data && data.length > 0 }
+    } catch (error) {
+      console.error('Error checking memberships:', error)
+      return { hasMemberships: false, error: 'Failed to check project memberships' }
+    }
+  }
+
   // Handle authentication state changes
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -47,14 +103,56 @@ export function LoginForm({
               type: "info",
               text: "Verifying your invitation..."
             })
-            // TODO: Call consume-invite-token Edge Function
-            // For now, redirect to projects
-            router.push('/projects')
+
+            // Call the consume-invite-token Edge Function
+            const result = await consumeInviteToken(inviteToken)
+
+            if (result.success && result.data) {
+              setMessage({
+                type: "success",
+                text: `Successfully joined ${result.data.project_name || 'project'} as ${result.data.role}!`
+              })
+
+              // Redirect to the specific project or projects list
+              setTimeout(() => {
+                if (result.data.project_id) {
+                  router.push(`/projects/${result.data.project_id}`)
+                } else {
+                  router.push('/projects')
+                }
+              }, 2000) // Show success message for 2 seconds
+            } else {
+              setMessage({
+                type: "error",
+                text: result.error || "Invalid or expired invitation link"
+              })
+              // Stay on login page to show error
+            }
           } else {
-            // No invite token - check if user is already a member
-            // TODO: Check project membership
-            // For now, redirect to projects
-            router.push('/projects')
+            // No invite token - check if user is already a member of any project
+            const { hasMemberships, error } = await checkProjectMemberships()
+
+            if (error) {
+              setMessage({
+                type: "error",
+                text: "Error checking account status. Please try again."
+              })
+            } else if (hasMemberships) {
+              // User has existing project memberships
+              setMessage({
+                type: "success",
+                text: "Welcome back! Redirecting to your projects..."
+              })
+              setTimeout(() => router.push('/projects'), 1500)
+            } else {
+              // New user with no project memberships
+              setMessage({
+                type: "info",
+                text: "Login successful! Please wait for a project invitation to get started."
+              })
+              // Could redirect to a "waiting for invitation" page
+              // For now, just show the message
+            }
           }
         }
       }
