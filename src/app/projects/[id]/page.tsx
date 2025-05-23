@@ -21,6 +21,7 @@ function TaskCard({ task, userRole }: { task: TaskWithDetails; userRole: 'admin'
   };
 
   const [showDropdown, setShowDropdown] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -30,17 +31,43 @@ function TaskCard({ task, userRole }: { task: TaskWithDetails; userRole: 'admin'
       }
     }
 
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setIsExpanded(false);
+        setShowDropdown(false);
+      }
+    }
+
     if (showDropdown) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
+    document.addEventListener('keydown', handleKeyDown);
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
     };
   }, [showDropdown]);
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
+    <div 
+      className={`bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-all duration-200 cursor-pointer ${
+        isExpanded ? 'ring-2 ring-blue-500 ring-opacity-20 shadow-md' : ''
+      }`}
+      onClick={(e) => {
+        // Don't expand if clicking on dropdown or buttons
+        if (!(e.target as HTMLElement).closest('.dropdown-menu, .action-button')) {
+          setIsExpanded(!isExpanded);
+        }
+      }}
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' && !isExpanded) {
+          setIsExpanded(true);
+        }
+      }}
+    >
       <div className="flex items-start gap-3">
         {/* Drag Handle */}
         <div className="mt-1 text-gray-400 cursor-grab">
@@ -55,10 +82,23 @@ function TaskCard({ task, userRole }: { task: TaskWithDetails; userRole: 'admin'
         </div>
 
         {/* Task Content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-medium text-gray-900">{task.title}</h3>
-            <div className="flex items-center gap-2">
+                  <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <h3 className="font-medium text-gray-900">{task.title}</h3>
+                {/* Expand/Collapse Indicator */}
+                <svg 
+                  className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
+                    isExpanded ? 'rotate-180' : ''
+                  }`}
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7 7" />
+                </svg>
+              </div>
+              <div className="flex items-center gap-2">
               {/* Comments/Updates Count Badge */}
               {(task.comments_count > 0 || task.has_pending_update) && (
                 <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">
@@ -66,9 +106,9 @@ function TaskCard({ task, userRole }: { task: TaskWithDetails; userRole: 'admin'
                 </span>
               )}
                              {/* Actions Menu */}
-               <div className="relative" ref={dropdownRef}>
+               <div className="relative dropdown-menu" ref={dropdownRef}>
                  <button 
-                   className="p-1 rounded hover:bg-gray-100 transition-colors"
+                   className="p-1 rounded hover:bg-gray-100 transition-colors action-button"
                    onClick={() => setShowDropdown(!showDropdown)}
                  >
                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" className="text-gray-400">
@@ -80,26 +120,26 @@ function TaskCard({ task, userRole }: { task: TaskWithDetails; userRole: 'admin'
                  
                  {/* Dropdown Menu */}
                  {showDropdown && (
-                   <div className="absolute right-0 top-8 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[150px] z-10">
-                    <button className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                      View Details
-                    </button>
-                    <button className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      Approve Task
-                    </button>
-                    <button className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                      Delete Task
-                    </button>
+                   <div className="absolute right-0 top-8 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[150px] z-10 dropdown-menu">
+                                         <button className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 action-button">
+                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                       </svg>
+                       View Details
+                     </button>
+                     <button className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 action-button">
+                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                       </svg>
+                       Approve Task
+                     </button>
+                     <button className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 action-button">
+                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                       </svg>
+                       Delete Task
+                     </button>
                   </div>
                 )}
               </div>
@@ -139,6 +179,44 @@ function TaskCard({ task, userRole }: { task: TaskWithDetails; userRole: 'admin'
               <span>Last Updated</span>
               <span>{formatDate(task.updated_at)}</span>
             </div>
+            
+            {/* Expanded Content */}
+            {isExpanded && (
+              <>
+                {/* Separator */}
+                <div className="border-t border-gray-200 my-3"></div>
+                <div className="flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  <span>Created</span>
+                  <span>{formatDate(task.created_at)}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>Status</span>
+                  <span className="font-medium text-gray-900">{task.status}</span>
+                </div>
+                {task.comments_count > 0 && (
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                    <span>Comments</span>
+                    <span className="font-medium text-gray-900">{task.comments_count}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2h4a1 1 0 110 2h-1v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6H3a1 1 0 110-2h4z" />
+                  </svg>
+                  <span>Position</span>
+                  <span className="font-medium text-gray-900">#{task.position}</span>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Pending Update Notification */}
@@ -150,7 +228,7 @@ function TaskCard({ task, userRole }: { task: TaskWithDetails; userRole: 'admin'
                 </svg>
                 <span className="text-blue-800 text-sm">An update is ready for you to review!</span>
               </div>
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+              <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors action-button">
                 Review Update
               </button>
             </div>
