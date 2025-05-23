@@ -2,6 +2,8 @@
 
 import { use, useState, useEffect, useRef } from 'react';
 import { useProject, useProjectTasks, useTaskCounts, useAuthDebug, TaskWithDetails } from '@/lib/hooks/useProjectData';
+import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase';
 
 /**
  * Project Tasks Page - Main task management interface matching target design
@@ -11,7 +13,11 @@ interface ProjectPageProps {
   params: Promise<{ id: string }>;
 }
 
-function TaskCard({ task, userRole }: { task: TaskWithDetails; userRole: 'admin' | 'designer' }) {
+function TaskCard({ task, userRole, onTaskUpdate }: { 
+  task: TaskWithDetails; 
+  userRole: 'admin' | 'designer';
+  onTaskUpdate?: () => void;
+}) {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'long',
@@ -22,6 +28,9 @@ function TaskCard({ task, userRole }: { task: TaskWithDetails; userRole: 'admin'
 
   const [showDropdown, setShowDropdown] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showViewDetails, setShowViewDetails] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -49,6 +58,72 @@ function TaskCard({ task, userRole }: { task: TaskWithDetails; userRole: 'admin'
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [showDropdown]);
+
+  // Context menu action handlers
+  const handleViewDetails = () => {
+    setShowViewDetails(true);
+    setShowDropdown(false);
+  };
+
+  const handleApproveTask = async () => {
+    if (userRole !== 'admin') return;
+    
+    setIsLoading(true);
+    setShowDropdown(false);
+    
+    try {
+      // Update task status to approved
+      const { error } = await supabase
+        .from('task')
+        .update({ status: 'Approved' })
+        .eq('id', task.id);
+
+      if (error) throw error;
+      
+      // Trigger refresh
+      onTaskUpdate?.();
+      
+      console.log('✅ Task approved successfully');
+    } catch (error) {
+      console.error('❌ Failed to approve task:', error);
+      alert('Failed to approve task. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteTask = async () => {
+    if (userRole !== 'admin') return;
+    
+    setIsLoading(true);
+    setShowDeleteConfirm(false);
+    setShowDropdown(false);
+    
+    try {
+      // Delete task
+      const { error } = await supabase
+        .from('task')
+        .delete()
+        .eq('id', task.id);
+
+      if (error) throw error;
+      
+      // Trigger refresh
+      onTaskUpdate?.();
+      
+      console.log('✅ Task deleted successfully');
+    } catch (error) {
+      console.error('❌ Failed to delete task:', error);
+      alert('Failed to delete task. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const confirmDelete = () => {
+    setShowDeleteConfirm(true);
+    setShowDropdown(false);
+  };
 
   return (
     <div 
@@ -118,30 +193,52 @@ function TaskCard({ task, userRole }: { task: TaskWithDetails; userRole: 'admin'
                    </svg>
                  </button>
                  
-                 {/* Dropdown Menu */}
+                                  {/* Dropdown Menu */}
                  {showDropdown && (
                    <div className="absolute right-0 top-8 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[150px] z-10 dropdown-menu">
-                                         <button className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 action-button">
+                     <button 
+                       onClick={handleViewDetails}
+                       className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 action-button"
+                     >
                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                        </svg>
                        View Details
                      </button>
-                     <button className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 action-button">
-                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                       </svg>
-                       Approve Task
-                     </button>
-                     <button className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 action-button">
-                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                       </svg>
-                       Delete Task
-                     </button>
-                  </div>
-                )}
+                     {userRole === 'admin' && task.status !== 'Approved' && (
+                       <button 
+                         onClick={handleApproveTask}
+                         disabled={isLoading}
+                         className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 action-button disabled:opacity-50"
+                       >
+                         {isLoading ? (
+                           <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                             <path className="opacity-75" fill="currentColor" d="m100 50 A50 50 0 0 1 75 25 L25 25 A25 25 0 0 1 50 0 Z"></path>
+                           </svg>
+                         ) : (
+                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                           </svg>
+                         )}
+                         {isLoading ? 'Approving...' : 'Approve Task'}
+                       </button>
+                     )}
+                     {userRole === 'admin' && (
+                       <button 
+                         onClick={confirmDelete}
+                         disabled={isLoading}
+                         className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 action-button disabled:opacity-50"
+                       >
+                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                         </svg>
+                         Delete Task
+                       </button>
+                     )}
+                   </div>
+                 )}
               </div>
             </div>
           </div>
@@ -235,6 +332,137 @@ function TaskCard({ task, userRole }: { task: TaskWithDetails; userRole: 'admin'
           )}
         </div>
       </div>
+
+      {/* View Details Modal */}
+      {showViewDetails && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-gray-900">Task Details</h2>
+                <button 
+                  onClick={() => setShowViewDetails(false)}
+                  className="p-1 rounded hover:bg-gray-100 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-medium text-gray-900 mb-2">{task.title}</h3>
+                  <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                    task.status === 'In Progress' ? 'bg-blue-100 text-blue-800' :
+                    task.status === 'Up Next' ? 'bg-yellow-100 text-yellow-800' :
+                    task.status === 'Backlog' ? 'bg-gray-100 text-gray-800' :
+                    task.status === 'Approved' ? 'bg-green-100 text-green-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {task.status}
+                  </span>
+                </div>
+                
+                {task.description && (
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-2">Description</h4>
+                    <p className="text-gray-700 text-sm leading-relaxed">{task.description}</p>
+                  </div>
+                )}
+                
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium text-gray-900">Assignee:</span>
+                    <p className="text-gray-700">
+                      {task.assignee ? (task.assignee.full_name || task.assignee.email) : 'Unassigned'}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-900">Position:</span>
+                    <p className="text-gray-700">#{task.position}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-900">Created:</span>
+                    <p className="text-gray-700">{formatDate(task.created_at)}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-900">Last Updated:</span>
+                    <p className="text-gray-700">{formatDate(task.updated_at)}</p>
+                  </div>
+                </div>
+                
+                {task.comments_count > 0 && (
+                  <div>
+                    <span className="font-medium text-gray-900">Comments:</span>
+                    <p className="text-gray-700">{task.comments_count} comment{task.comments_count !== 1 ? 's' : ''}</p>
+                  </div>
+                )}
+                
+                {task.has_pending_update && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <p className="text-blue-800 text-sm">This task has pending updates awaiting review.</p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex justify-end gap-3 mt-6">
+                <button 
+                  onClick={() => setShowViewDetails(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                >
+                  Close
+                </button>
+                {userRole === 'admin' && task.status !== 'Approved' && (
+                  <button 
+                    onClick={handleApproveTask}
+                    disabled={isLoading}
+                    className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    {isLoading ? 'Approving...' : 'Approve Task'}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg max-w-md w-full mx-4">
+            <div className="p-6">
+              <div className="flex items-center mb-4">
+                <svg className="w-6 h-6 text-red-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+                <h3 className="text-lg font-medium text-gray-900">Delete Task</h3>
+              </div>
+              
+              <p className="text-gray-700 mb-6">
+                Are you sure you want to delete "<strong>{task.title}</strong>"? This action cannot be undone.
+              </p>
+              
+              <div className="flex justify-end gap-3">
+                <button 
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleDeleteTask}
+                  disabled={isLoading}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  {isLoading ? 'Deleting...' : 'Delete Task'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -244,13 +472,17 @@ function TaskSection({
   tasks, 
   isExpanded = true,
   onToggle,
-  showSearch = false 
+  showSearch = false,
+  userRole,
+  onTaskUpdate
 }: { 
   title: string; 
   tasks: TaskWithDetails[];
   isExpanded?: boolean;
   onToggle?: () => void;
   showSearch?: boolean;
+  userRole: 'admin' | 'designer';
+  onTaskUpdate: () => void;
 }) {
   return (
     <section className="space-y-3">
@@ -284,7 +516,7 @@ function TaskSection({
         <div className="space-y-3 ml-5">
           {tasks.length > 0 ? (
             tasks.map(task => (
-              <TaskCard key={task.id} task={task} userRole="admin" />
+              <TaskCard key={task.id} task={task} userRole={userRole} onTaskUpdate={onTaskUpdate} />
             ))
           ) : (
             <div className="text-gray-500 text-sm italic">
@@ -301,6 +533,9 @@ export default function ProjectPage({ params }: ProjectPageProps) {
   // Fix for Next.js 15: unwrap params Promise using React.use()
   const { id: projectId } = use(params);
   
+  // Query client for data refresh
+  const queryClient = useQueryClient();
+  
   // Debug auth state
   const authDebug = useAuthDebug();
   console.log('🔍 [ProjectPage] Auth debug state:', authDebug);
@@ -309,6 +544,12 @@ export default function ProjectPage({ params }: ProjectPageProps) {
   const { data: project, isLoading: projectLoading, error: projectError } = useProject(projectId);
   const { data: tasks, isLoading: tasksLoading, error: tasksError } = useProjectTasks(projectId);
   const { active: activeTasks } = useTaskCounts(projectId);
+
+  // Task update handler
+  const handleTaskUpdate = () => {
+    queryClient.invalidateQueries({ queryKey: ['project-tasks', projectId] });
+    queryClient.invalidateQueries({ queryKey: ['project', projectId] });
+  };
 
   // Section expansion state
   const [expandedSections, setExpandedSections] = useState({
@@ -438,6 +679,8 @@ export default function ProjectPage({ params }: ProjectPageProps) {
               tasks={tasks.in_progress} 
               isExpanded={expandedSections['In Progress']}
               onToggle={() => toggleSection('In Progress')}
+              userRole={project.user_role}
+              onTaskUpdate={handleTaskUpdate}
             />
 
             {/* Up Next Section */}
@@ -446,6 +689,8 @@ export default function ProjectPage({ params }: ProjectPageProps) {
               tasks={tasks.up_next} 
               isExpanded={expandedSections['Up Next']}
               onToggle={() => toggleSection('Up Next')}
+              userRole={project.user_role}
+              onTaskUpdate={handleTaskUpdate}
             />
 
             {/* Backlog Section */}
@@ -455,6 +700,8 @@ export default function ProjectPage({ params }: ProjectPageProps) {
               isExpanded={expandedSections['Backlog']}
               onToggle={() => toggleSection('Backlog')}
               showSearch={true}
+              userRole={project.user_role}
+              onTaskUpdate={handleTaskUpdate}
             />
           </div>
         </div>
