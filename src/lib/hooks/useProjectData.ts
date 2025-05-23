@@ -223,9 +223,9 @@ export function useProjectTasks(projectId: string) {
       if (taskIds.length > 0) {
         const { data: updates } = await supabase
           .from('task_update')
-          .select('task_id, is_approved')
+          .select('task_id, status')
           .in('task_id', taskIds)
-          .is('is_approved', null);
+          .eq('status', 'waiting');
         
         if (updates) {
           updatesMap = updates.reduce((acc, update) => {
