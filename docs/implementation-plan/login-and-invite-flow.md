@@ -134,6 +134,7 @@ Authentication is the literal front door to our shiny new platform. This slice f
   - Added loading states and form validation.
   - Created placeholder `/projects` page for post-auth redirects.
   - All services confirmed running: Next.js, Supabase API, Inbucket email service.
+  - **✅ TESTED SUCCESSFULLY**: User confirmed magic-link email received and redirect working correctly.
 - **Next up**: Implement invite token extraction from URL (Task 5).
 
 ## Executor's Feedback or Assistance Requests

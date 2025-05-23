@@ -23,6 +23,8 @@ _Add new items to the list below as `- [YYYY-MM-DD] Your wisdom here`_
 - [2025-05-19] Initial project scaffolding created by Planner.
 - [2025-05-19] GitHub Actions removed from project scope per user request - using manual verification and testing instead for MVP.
 - [2025-05-19] When applying new Supabase migrations, use direct psql application instead of `supabase db reset` to avoid data loss.
+- [2025-05-19] Next.js HMR can fail when converting server components to client components ("use client"). Fix: kill dev server, rm -rf .next, restart npm run dev.
+- [2025-05-19] Magic-link authentication flow tested successfully: login form → Supabase email → Inbucket → magic link click → redirect to /projects.
 
 ### Master Project Board (Overall Ordering & Status)
 
