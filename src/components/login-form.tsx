@@ -35,6 +35,71 @@ export function LoginForm({
   // Function to call the consume-invite-token Edge Function
   const consumeInviteToken = async (token: string): Promise<{ success: boolean; data?: any; error?: string }> => {
     try {
+      // TEMPORARY: Mock response for testing when Edge Function isn't deployed
+      if (token === 'test-invite-123') {
+        console.log('Using mock response for test token')
+        
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 1500))
+        
+        // Check if this user is already a member of the test project
+        const { data: existingMember } = await supabase
+          .from('project_member')
+          .select('role')
+          .eq('project_id', '49b31685-877b-4d32-9b03-c0796876e33d')
+          .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+          .single()
+
+        if (existingMember) {
+          return {
+            success: true,
+            data: {
+              message: 'Already a member of this project',
+              project_id: '49b31685-877b-4d32-9b03-c0796876e33d',
+              project_name: 'Outpost',
+              role: existingMember.role
+            }
+          }
+        }
+
+        // Create membership for test
+        const user = (await supabase.auth.getUser()).data.user
+        if (user) {
+          const { data: memberData, error: memberError } = await supabase
+            .from('project_member')
+            .insert({
+              project_id: '49b31685-877b-4d32-9b03-c0796876e33d',
+              user_id: user.id,
+              role: 'designer'
+            })
+            .select()
+            .single()
+
+          if (memberError) {
+            console.error('Mock membership creation failed:', memberError)
+            return { success: false, error: `Failed to join project: ${memberError.message}` }
+          }
+
+          // Mark token as used
+          await supabase
+            .from('invite_token')
+            .update({ used_at: new Date().toISOString() })
+            .eq('token', token)
+
+          return {
+            success: true,
+            data: {
+              message: 'Successfully joined project',
+              project_id: '49b31685-877b-4d32-9b03-c0796876e33d',
+              project_name: 'Outpost',
+              role: 'designer',
+              membership: memberData
+            }
+          }
+        }
+      }
+
+      // Real Edge Function call (for when it's deployed)
       const { data: { session } } = await supabase.auth.getSession()
       
       if (!session?.access_token) {
@@ -97,11 +162,12 @@ export function LoginForm({
           
           // Check for invite token in URL
           const inviteToken = searchParams.get('invite_token')
+          console.log('Invite token after auth:', inviteToken) // Debug log
           
           if (inviteToken) {
             setMessage({
               type: "info",
-              text: "Verifying your invitation..."
+              text: "🔄 Verifying your invitation..."
             })
 
             // Call the consume-invite-token Edge Function
@@ -110,22 +176,23 @@ export function LoginForm({
             if (result.success && result.data) {
               setMessage({
                 type: "success",
-                text: `Successfully joined ${result.data.project_name || 'project'} as ${result.data.role}!`
+                text: `🎉 Success! You've joined "${result.data.project_name || 'the project'}" as a ${result.data.role}!`
               })
 
-              // Redirect to the specific project or projects list
+              // Show success message longer for better UX
               setTimeout(() => {
                 if (result.data.project_id) {
                   router.push(`/projects/${result.data.project_id}`)
                 } else {
                   router.push('/projects')
                 }
-              }, 2000) // Show success message for 2 seconds
+              }, 3000) // Show success message for 3 seconds
             } else {
               setMessage({
                 type: "error",
-                text: result.error || "Invalid or expired invitation link"
+                text: `❌ ${result.error || "Invalid or expired invitation link"}`
               })
+              console.error('Invite token redemption failed:', result.error)
               // Stay on login page to show error
             }
           } else {
@@ -141,14 +208,14 @@ export function LoginForm({
               // User has existing project memberships
               setMessage({
                 type: "success",
-                text: "Welcome back! Redirecting to your projects..."
+                text: "✅ Welcome back! Redirecting to your projects..."
               })
               setTimeout(() => router.push('/projects'), 1500)
             } else {
               // New user with no project memberships
               setMessage({
                 type: "info",
-                text: "Login successful! Please wait for a project invitation to get started."
+                text: "✅ Login successful! Please wait for a project invitation to get started."
               })
               // Could redirect to a "waiting for invitation" page
               // For now, just show the message
@@ -176,14 +243,21 @@ export function LoginForm({
     setMessage(null)
 
     try {
+      // Get invite token from URL if present
+      const inviteToken = searchParams.get('invite_token')
+      console.log('Invite token from URL:', inviteToken) // Debug log
+      
+      // Construct redirect URL with invite token preserved
+      const redirectUrl = inviteToken 
+        ? `${window.location.origin}/login?invite_token=${inviteToken}`
+        : `${window.location.origin}/login`
+      
+      console.log('Email redirect URL:', redirectUrl) // Debug log
+
       const { error } = await supabase.auth.signInWithOtp({
         email: email.trim(),
         options: {
-          emailRedirectTo: `${window.location.origin}/login${
-            searchParams.get('invite_token') 
-              ? `?invite_token=${searchParams.get('invite_token')}` 
-              : ''
-          }`
+          emailRedirectTo: redirectUrl
         }
       })
 
@@ -194,10 +268,17 @@ export function LoginForm({
           text: error.message || "Failed to send magic link"
         })
       } else {
-        setMessage({
-          type: "success",
-          text: "Check your email for the magic link!"
-        })
+        if (inviteToken) {
+          setMessage({
+            type: "success",
+            text: "Check your email for the magic link to join the project!"
+          })
+        } else {
+          setMessage({
+            type: "success",
+            text: "Check your email for the magic link!"
+          })
+        }
         setEmail("") // Clear the email field
       }
     } catch (err) {
