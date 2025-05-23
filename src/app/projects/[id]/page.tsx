@@ -14,7 +14,7 @@ interface ProjectPageProps {
 function TaskCard({ task, userRole }: { task: TaskWithDetails; userRole: 'admin' | 'designer' }) {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'long',
+      month: 'short',
       day: 'numeric',
       year: 'numeric'
     });
@@ -37,33 +37,33 @@ function TaskCard({ task, userRole }: { task: TaskWithDetails; userRole: 'admin'
 
         {/* Task Content */}
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-gray-900 mb-3">{task.title}</h3>
+          <h3 className="font-medium text-gray-900 mb-2">{task.title}</h3>
           
           {/* Task Summary */}
           {task.description && (
-            <p className="text-gray-700 text-sm mb-4 leading-relaxed">
+            <p className="text-gray-600 text-sm mb-3 leading-relaxed">
               {task.description}
             </p>
           )}
 
           {/* Task Metadata */}
-          <div className="flex items-center gap-6 text-sm text-gray-600 mb-3">
+          <div className="space-y-1 text-sm text-gray-500">
             {task.assignee && (
-              <div className="flex items-center gap-2">
-                <span className="font-medium">👨‍💻 Designer</span>
-                <span className="font-medium">{task.assignee.full_name || task.assignee.email}</span>
+              <div className="flex items-center gap-1">
+                <span>Designer</span>
+                <span className="font-medium text-gray-700">{task.assignee.full_name || task.assignee.email}</span>
               </div>
             )}
-            <div className="flex items-center gap-2">
-              <span>📅 Last Updated</span>
+            <div className="flex items-center gap-1">
+              <span>Last Updated</span>
               <span>{formatDate(task.updated_at)}</span>
             </div>
           </div>
 
           {/* Pending Update Notification */}
           {task.has_pending_update && userRole === 'admin' && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center justify-between">
-              <span className="text-blue-800 text-sm">📋 An update is ready for you to review!</span>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3 flex items-center justify-between">
+              <span className="text-blue-800 text-sm">An update is ready for you to review!</span>
               <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
                 Review Update
               </button>
@@ -100,17 +100,12 @@ function TaskSection({
   showSearch?: boolean;
 }) {
   return (
-    <section className="space-y-4">
+    <section className="space-y-3">
       {/* Section Header */}
       <div 
-        className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 -m-2 rounded"
+        className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 -m-1 rounded"
         onClick={onToggle}
       >
-        <div className="w-2 h-2 rounded-full bg-gray-400"></div>
-        <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
-        {isExpanded && tasks.length > 0 && (
-          <span className="text-sm text-gray-500">({tasks.length})</span>
-        )}
         {onToggle && (
           <svg 
             className={`w-4 h-4 text-gray-500 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
@@ -121,11 +116,17 @@ function TaskSection({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         )}
+        <h2 className="text-base font-medium text-gray-900">
+          {title}
+          {tasks.length > 0 && (
+            <span className="text-gray-500 ml-1">({tasks.length})</span>
+          )}
+        </h2>
       </div>
       
       {/* Search for Backlog */}
       {showSearch && isExpanded && (
-        <div className="mb-4">
+        <div className="ml-6">
           <input 
             type="text" 
             placeholder="Search" 
@@ -136,7 +137,7 @@ function TaskSection({
       
       {/* Task Cards */}
       {isExpanded && (
-        <div className="space-y-3 ml-4">
+        <div className="space-y-3 ml-6">
           {tasks.length > 0 ? (
             tasks.map(task => (
               <TaskCard key={task.id} task={task} userRole="admin" />
