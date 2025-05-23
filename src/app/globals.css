@@ -38,6 +38,15 @@
   --sidebar-ring: oklch(0.87 0 0);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
+  
+  /* OffMenu Design System - Task Management Colors */
+  --status-in-progress: oklch(0.65 0.2 25);
+  --status-up-next: oklch(0.65 0.15 220);
+  --status-backlog: oklch(0.6 0.1 280);
+  --status-completed: oklch(0.65 0.2 140);
+  --alert-info: oklch(0.7 0.15 220);
+  --alert-success: oklch(0.7 0.15 140);
+  --alert-warning: oklch(0.75 0.2 70);
 }
 
 .dark {
@@ -73,6 +82,124 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.269 0 0);
   --sidebar-ring: oklch(0.439 0 0);
+}
+
+/* OffMenu Component Classes */
+
+/* Project Header */
+.project-header {
+  @apply border-b bg-white shadow-sm;
+}
+
+.project-title {
+  @apply text-2xl font-bold text-gray-900;
+}
+
+.project-subtitle {
+  @apply text-sm text-gray-600 mt-1;
+}
+
+/* Tab Navigation */
+.nav-tabs {
+  @apply flex space-x-1 border-b;
+}
+
+.nav-tab {
+  @apply px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-t-lg transition-colors;
+}
+
+.nav-tab.active {
+  @apply text-gray-900 bg-white border-b-2 border-blue-500 relative -mb-px;
+}
+
+/* Task Management */
+.task-section {
+  @apply space-y-4;
+}
+
+.task-section-header {
+  @apply flex items-center text-lg font-semibold text-gray-900 mb-4;
+}
+
+.task-count {
+  @apply text-sm font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded;
+}
+
+.task-card {
+  @apply bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow;
+}
+
+.task-card.expanded {
+  @apply ring-2 ring-blue-500 ring-opacity-20;
+}
+
+/* Status Indicators */
+.status-dot {
+  @apply w-3 h-3 rounded-full mr-3;
+}
+
+.status-dot.in-progress {
+  background-color: var(--status-in-progress);
+}
+
+.status-dot.up-next {
+  background-color: var(--status-up-next);
+}
+
+.status-dot.backlog {
+  background-color: var(--status-backlog);
+}
+
+.status-dot.completed {
+  background-color: var(--status-completed);
+}
+
+/* Buttons */
+.btn-primary {
+  @apply bg-black text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-800 transition-colors;
+}
+
+.btn-approve {
+  @apply bg-green-600 text-white px-3 py-1 text-sm rounded hover:bg-green-700 transition-colors;
+}
+
+.btn-delete {
+  @apply bg-red-600 text-white px-3 py-1 text-sm rounded hover:bg-red-700 transition-colors;
+}
+
+/* Alerts & Notifications */
+.alert-info {
+  @apply bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg;
+}
+
+.alert-success {
+  @apply bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg;
+}
+
+/* Text Utilities */
+.text-primary {
+  @apply text-gray-900;
+}
+
+.text-secondary {
+  @apply text-gray-700;
+}
+
+.text-muted {
+  @apply text-gray-500;
+}
+
+/* Interactive Elements */
+.drag-handle {
+  @apply text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing;
+}
+
+.badge {
+  @apply inline-flex items-center px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded;
+}
+
+.dropdown-trigger {
+  @apply p-1 rounded hover:bg-gray-100 transition-colors;
 }
 
 .theme-login-one {
