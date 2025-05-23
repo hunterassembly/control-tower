@@ -130,7 +130,7 @@
 }
 
 .task-card.expanded {
-  @apply ring-2 ring-blue-500 ring-opacity-20;
+  @apply ring-2 ring-blue-500 ring-blue-500/20;
 }
 
 /* Status Indicators */
