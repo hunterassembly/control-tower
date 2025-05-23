@@ -134,6 +134,7 @@ The console errors are **EXPECTED SECURITY BEHAVIOR**! Our protection is working
 - ✅ `0caa639`: Implement expandable task card interactions - Added click-to-expand functionality with visual indicators, smooth animations, expanded content, keyboard shortcuts
 - ✅ `ff5d5c8`: Implement functional context menus and actions - Added View Details modal, role-based Approve Task functionality, Delete Task with confirmation, data refresh, loading states
 - ✅ `d8fb1ea`: Implement drag and drop task reordering - Added @dnd-kit integration with smooth animations, visual feedback, database persistence, optimistic updates, keyboard accessibility
+- ✅ `3d6ad6c`: Enhanced drag and drop UX - Entire card now draggable with activation constraints, improved cursor states, hover effects, smarter interaction exclusions
 
 ### 🎯 **MASSIVE UI BREAKTHROUGH - TARGET DESIGN ACHIEVED** (January 27, 2025):
 
@@ -235,19 +236,23 @@ The console errors are **EXPECTED SECURITY BEHAVIOR**! Our protection is working
 **🎯 TASK 14 IMPLEMENTED**: Drag & Drop Task Reordering
 
 **✅ FEATURES COMPLETED**:
-- **Smooth Drag Operations**: Tasks can be dragged within sections to reorder
-- **Visual Feedback**: 
-  - Dragging opacity and cursor changes
+- **Enhanced Drag Operations**: 
+  - Entire task card is draggable (not just the drag handle)
+  - 8px distance activation constraint to prevent accidental drags
+  - 100ms delay with 5px tolerance for smooth click vs drag detection
+- **Superior Visual Feedback**: 
+  - Cursor changes: grab → grabbing states
+  - Subtle hover ring effect to indicate draggable areas
+  - Drag handle becomes visual indicator with hover transitions
   - Drag overlay with rotation and shadow effects
-  - Visual indicators during drag state
+- **Smart Interaction Handling**:
+  - Excludes buttons, inputs, dropdowns from triggering drag
+  - Maintains expand/collapse functionality
+  - Prevents conflicts with context menus and actions
 - **Database Persistence**: Position changes saved to Supabase with optimistic updates
-- **Error Handling**: Graceful fallback to original order on API failures
+- **Error Handling**: Graceful fallback to original order on API failures  
 - **Keyboard Accessibility**: Full keyboard navigation support for drag operations
 - **Performance Optimized**: Smooth animations with proper transition states
-- **User Experience**:
-  - Prevents expansion clicks during drag operations
-  - Maintains existing functionality (expand/collapse, context menus)
-  - Immediate visual feedback during operations
 
 **🔧 TECHNICAL IMPLEMENTATION**:
 - **@dnd-kit Integration**: Professional drag and drop library with accessibility
