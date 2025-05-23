@@ -14,6 +14,10 @@ This document is the shared brain-dump playground for both Planner and Executor 
 - [Admin Invites](implementation-plan/admin-invites.md)
 - [Notifications & Role Guards](implementation-plan/notifications-and-role-guards.md)
 
+### Project Management & Processes
+
+- [**Git Workflow & Branching Strategy**](git-workflow.md) 🚨 **MANDATORY READING**
+
 ---
 
 ### Lessons Learned
@@ -39,6 +43,7 @@ _Add new items to the list below as `- [YYYY-MM-DD] Your wisdom here`_
 - [2025-01-27] **Successful Merge Resolution**: Project task list feature branch successfully merged to main! Key strategy: resolve conflicts systematically (supabase.ts merged helper functions, projects/page.tsx kept functional version, globals.css merged complete design system). Always remove package-lock.json conflicts and regenerate via npm install. Use git add . then git commit to complete merge.
 - [2025-01-27] **Next.js Cache Issues After Merge**: If you see JSON parsing errors with conflict markers after merging, it's usually cached files in `.next` directory. Fix: `pkill -f "next dev"`, `rm -rf .next`, then `npm run dev`. The conflict markers were cached, not actually in the files.
 - [2025-01-27] **Successful Branch Rebase**: Task detail branch successfully rebased onto merged main! Strategy: resolve conflicts (kept comprehensive supabase.ts version), regenerate package-lock.json, `git add .`, `git rebase --continue`. Use `--force-with-lease` to safely push rebased branch. All task detail files preserved and ready for continued development.
+- [2025-01-27] **CRITICAL PROCESS IMPROVEMENT**: Created comprehensive git workflow document to prevent merge conflicts. KEY RULES: (1) Always start branches from latest main, (2) Daily rebase for active branches, (3) No branch >5 commits behind main, (4) Merge oldest branches first, (5) Use --force-with-lease for safe pushes. This prevents the messy rebase situations we just experienced.
 
 ### Master Project Board (Overall Ordering & Status)
 
