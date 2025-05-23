@@ -22,11 +22,12 @@ _Add new items to the list below as `- [YYYY-MM-DD] Your wisdom here`_
 
 - [2025-05-19] Initial project scaffolding created by Planner.
 - [2025-05-19] GitHub Actions removed from project scope per user request - using manual verification and testing instead for MVP.
+- [2025-05-19] When applying new Supabase migrations, use direct psql application instead of `supabase db reset` to avoid data loss.
 
 ### Master Project Board (Overall Ordering & Status)
 
 - [ ] in-progress 01 — Backend Foundation & Schema (`feature/backend-foundation-schema`)
-- [ ] 02 — Login & Invite Flow (`feature/login-and-invite-flow`)
+- [ ] in-progress 02 — Login & Invite Flow (`feature/login-and-invite-flow`)
 - [ ] 03 — Projects Dashboard (`feature/projects-dashboard`)
 - [ ] 04 — Project Task List (`feature/project-task-list`)
 - [ ] 05 — Task Detail & Updates (`feature/task-detail-and-updates`)

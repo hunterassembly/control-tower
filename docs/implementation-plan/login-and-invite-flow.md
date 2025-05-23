@@ -96,7 +96,7 @@ Authentication is the literal front door to our shiny new platform. This slice f
 - [x] Branch created (`feature/login-and-invite-flow`)
 - [x] `invite_token` table and RLS created
 - [x] `/login` page UI implemented
-- [ ] Magic-link client-side logic works (triggers email, `onAuthStateChange` fires)
+- [x] Magic-link client-side logic works (triggers email, `onAuthStateChange` fires)
 - [ ] Invite token extraction from URL works
 - [ ] Edge Function `consume-invite-token` created and tested
 - [ ] Client-side handling of `consume-invite-token` response (redirects, errors) works
@@ -124,7 +124,17 @@ Authentication is the literal front door to our shiny new platform. This slice f
   - Implemented 3 RLS policies for security: admin management, token lookup, system updates.
   - Created helper function `is_project_admin()` for role checking.
   - Database now has 9 tables total, all existing data preserved.
-- **Next up**: Implement Supabase magic-link client-side logic (Task 4).
+- **Task (4) ✅ COMPLETE**: Implemented Supabase magic-link client-side logic.
+  - Installed `@supabase/supabase-js` client library.
+  - Created `src/lib/supabase.ts` with local development configuration.
+  - Converted login form to client component with React state management.
+  - Implemented `signInWithOtp()` with proper email redirect handling.
+  - Added `onAuthStateChange` listener for post-authentication logic.
+  - Created success/error message display with proper styling.
+  - Added loading states and form validation.
+  - Created placeholder `/projects` page for post-auth redirects.
+  - All services confirmed running: Next.js, Supabase API, Inbucket email service.
+- **Next up**: Implement invite token extraction from URL (Task 5).
 
 ## Executor's Feedback or Assistance Requests
 *(empty)*
