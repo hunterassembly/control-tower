@@ -26,6 +26,7 @@ _Add new items to the list below as `- [YYYY-MM-DD] Your wisdom here`_
 - [2025-01-27] Always verify the correct port for Next.js dev server with `lsof -i :3000` - don't assume port numbers. Default is 3000, not 3001!
 - [2025-01-27] When auth issues are complex, add comprehensive debugging FIRST: console logs in hooks, visual debug displays, and auth state monitoring. This saves hours of guessing. Use prefixed emojis (🔍, 🔐, ✅, ❌) for easy filtering.
 - [2025-01-27] 400 API errors that look like auth problems can actually be database schema mismatches! Always check if the code's expected columns/enums match the actual database structure. Use `\d table_name` in psql to verify schema. In this case: missing `position` column, wrong status enum values (`'Backlog'` vs `'backlog'`), and missing project columns caused all the 400s.
+- [2025-01-27] **Planner Mode**: Always do comprehensive design analysis BEFORE starting implementation. The initial task-detail plan was way too high-level (7 tasks) vs the detailed mockup analysis (32 tasks across 8 phases). Thorough planning prevents scope creep and ensures nothing gets missed. Extract every UI element, interaction, and user flow from designs.
 
 ### Master Project Board (Overall Ordering & Status)
 
@@ -33,7 +34,7 @@ _Add new items to the list below as `- [YYYY-MM-DD] Your wisdom here`_
 - [ ] 02 — Login & Invite Flow (`feature/login-and-invite-flow`)
 - [ ] 03 — Projects Dashboard (`feature/projects-dashboard`)
 - [ ] 04 — Project Task List (`feature/project-task-list`)
-- [ ] 05 — Task Detail & Updates (`feature/task-detail-and-updates`)
+- [ ] 05 — Task Detail & Updates (`feature/task-detail-and-updates`) ✅ **PLANNING COMPLETE**
 - [ ] 06 — Assets Lightbox (`feature/assets-lightbox`)
 - [ ] 07 — Update Approval Flow (`feature/update-approval-flow`)
 - [ ] 08 — Admin Invites (`feature/admin-invites`)
