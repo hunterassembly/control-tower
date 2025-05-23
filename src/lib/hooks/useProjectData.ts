@@ -50,42 +50,37 @@ export function useProject(projectId: string) {
         throw new Error('Authentication required');
       }
 
-      // Get project with user's role
-      const { data, error } = await supabase
+      // Get user's membership info for this project
+      const { data: membershipData, error: membershipError } = await supabase
         .from('project_member')
-        .select(`
-          user_id,
-          role,
-          project:project_id (
-            id,
-            name,
-            description,
-            created_at,
-            updated_at
-          )
-        `)
+        .select('user_id, role')
         .eq('project_id', projectId)
         .eq('user_id', user.id)
         .single();
 
-      if (error) {
-        throw new Error(`Failed to fetch project: ${error.message}`);
-      }
-
-      if (!data || !data.project) {
+      if (membershipError || !membershipData) {
         throw new Error('Project not found or access denied');
       }
 
-      const project = data.project as any; // Type assertion for nested query
+      // Get project details separately
+      const { data: projectData, error: projectError } = await supabase
+        .from('project')
+        .select('id, name, description, created_at, updated_at')
+        .eq('id', projectId)
+        .single();
+
+      if (projectError || !projectData) {
+        throw new Error(`Failed to fetch project: ${projectError?.message || 'Project not found'}`);
+      }
       
       return {
-        id: project.id,
-        name: project.name,
-        description: project.description,
-        created_at: project.created_at,
-        updated_at: project.updated_at,
-        user_role: data.role,
-        user_id: data.user_id,
+        id: projectData.id,
+        name: projectData.name,
+        description: projectData.description,
+        created_at: projectData.created_at,
+        updated_at: projectData.updated_at,
+        user_role: membershipData.role,
+        user_id: membershipData.user_id,
       };
     },
     enabled: !!projectId,
@@ -99,34 +94,90 @@ export function useProjectTasks(projectId: string) {
   return useQuery({
     queryKey: ['project-tasks', projectId],
     queryFn: async (): Promise<TasksByStatus> => {
-      // Get tasks with assignee details and comments count
-      const { data, error } = await supabase
+      // Get basic task data first
+      const { data: tasks, error: tasksError } = await supabase
         .from('task')
-        .select(`
-          *,
-          assignee:assignee_id (
-            id,
-            full_name,
-            email
-          ),
-          comments:task_comment (count),
-          updates:task_update (
-            is_approved
-          )
-        `)
+        .select('*')
         .eq('project_id', projectId)
         .order('position', { ascending: true });
 
-      if (error) {
-        throw new Error(`Failed to fetch tasks: ${error.message}`);
+      if (tasksError) {
+        throw new Error(`Failed to fetch tasks: ${tasksError.message}`);
       }
 
-      // Process tasks and group by status
-      const tasksWithDetails: TaskWithDetails[] = (data || []).map(task => ({
+      if (!tasks || tasks.length === 0) {
+        // Return empty groups if no tasks
+        return {
+          in_progress: [],
+          up_next: [],
+          backlog: [],
+          completed: [],
+        };
+      }
+
+      // Get assignee info for tasks that have assignees
+      const assigneeIds = tasks
+        .map(task => task.assignee_id)
+        .filter(Boolean);
+
+      let assigneeMap: Record<string, any> = {};
+      
+      if (assigneeIds.length > 0) {
+        const { data: assignees } = await supabase
+          .from('auth_user')
+          .select('id, full_name, email')
+          .in('id', assigneeIds);
+        
+        if (assignees) {
+          assigneeMap = assignees.reduce((acc, assignee) => {
+            acc[assignee.id] = assignee;
+            return acc;
+          }, {} as Record<string, any>);
+        }
+      }
+
+      // Get comments count for each task
+      const taskIds = tasks.map(task => task.id);
+      let commentsMap: Record<string, number> = {};
+      
+      if (taskIds.length > 0) {
+        const { data: comments } = await supabase
+          .from('task_comment')
+          .select('task_id')
+          .in('task_id', taskIds);
+        
+        if (comments) {
+          commentsMap = comments.reduce((acc, comment) => {
+            acc[comment.task_id] = (acc[comment.task_id] || 0) + 1;
+            return acc;
+          }, {} as Record<string, number>);
+        }
+      }
+
+      // Get pending updates for each task
+      let updatesMap: Record<string, boolean> = {};
+      
+      if (taskIds.length > 0) {
+        const { data: updates } = await supabase
+          .from('task_update')
+          .select('task_id, is_approved')
+          .in('task_id', taskIds)
+          .is('is_approved', null);
+        
+        if (updates) {
+          updatesMap = updates.reduce((acc, update) => {
+            acc[update.task_id] = true;
+            return acc;
+          }, {} as Record<string, boolean>);
+        }
+      }
+
+      // Process tasks and add related data
+      const tasksWithDetails: TaskWithDetails[] = tasks.map(task => ({
         ...task,
-        assignee: task.assignee,
-        comments_count: task.comments?.[0]?.count || 0,
-        has_pending_update: task.updates?.some((u: any) => u.is_approved === null) || false,
+        assignee: task.assignee_id ? assigneeMap[task.assignee_id] || null : null,
+        comments_count: commentsMap[task.id] || 0,
+        has_pending_update: updatesMap[task.id] || false,
       }));
 
       // Group by status
