@@ -92,10 +92,10 @@ Authentication is the literal front door to our shiny new platform. This slice f
 7.  The `/login` page UI is clean, responsive, and provides clear feedback for all states (e.g., "sending link...", "check email", "error...").
 
 ## Project Status Board
-- [ ] Planning ✅
-- [ ] Branch created (`feature/login-and-invite-flow`)
+- [x] Planning ✅
+- [x] Branch created (`feature/login-and-invite-flow`)
 - [ ] `invite_token` table and RLS created
-- [ ] `/login` page UI implemented
+- [x] `/login` page UI implemented
 - [ ] Magic-link client-side logic works (triggers email, `onAuthStateChange` fires)
 - [ ] Invite token extraction from URL works
 - [ ] Edge Function `consume-invite-token` created and tested
@@ -107,7 +107,16 @@ Authentication is the literal front door to our shiny new platform. This slice f
 - [ ] Ready for merge
 
 ## Current Status / Progress Tracking
-*(empty – Executor will fill)*
+- [2025-05-19]: Switched to Executor mode per user request.
+- Created branch `feature/login-and-invite-flow` off `main`.
+- **Task (1) ✅ COMPLETE**: Branch created and pushed to remote.
+- **Task (3) ✅ COMPLETE**: `/login` page UI implemented using Shadcn login-03 component.
+  - Installed `npx shadcn@latest add login-03` successfully.
+  - Customized the login form to remove OAuth/password fields and focus on magic-link flow.
+  - Updated copy to use "OffMenu" branding and magic-link messaging.
+  - Added placeholder area for success/error messages.
+  - Dev server running at http://localhost:3000/login and page renders correctly.
+- **Next up**: Need to create the `invite_token` table in Supabase (Task 2) before implementing magic-link logic.
 
 ## Executor's Feedback or Assistance Requests
 *(empty)*
