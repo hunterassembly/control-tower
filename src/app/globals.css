@@ -38,6 +38,63 @@
   --sidebar-ring: oklch(0.87 0 0);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
+
+  /* OffMenu Project Task Interface Design System */
+  
+  /* Header & Navigation */
+  --header-bg: oklch(0.98 0 0); /* Light gray header background */
+  --header-border: oklch(0.9 0 0); /* Subtle border */
+  --nav-text: oklch(0.4 0 0); /* Medium gray for inactive tabs */
+  --nav-text-active: oklch(0.15 0 0); /* Dark text for active tab */
+  --nav-indicator: oklch(0.15 0 0); /* Black underline for active tab */
+  
+  /* Task Cards */
+  --task-card-bg: oklch(1 0 0); /* White card background */
+  --task-card-border: oklch(0.95 0 0); /* Very light gray border */
+  --task-card-hover: oklch(0.99 0 0); /* Slight gray on hover */
+  --task-card-shadow: oklch(0.95 0 0 / 0.1); /* Subtle shadow */
+  
+  /* Task Status Colors */
+  --status-in-progress: oklch(0.6 0.15 142); /* Green for in progress */
+  --status-up-next: oklch(0.75 0.12 60); /* Yellow/orange for up next */
+  --status-backlog: oklch(0.65 0.1 240); /* Blue for backlog */
+  --status-approved: oklch(0.6 0.15 142); /* Green for approved */
+  --status-waiting: oklch(0.75 0.12 60); /* Orange for waiting */
+  --status-revising: oklch(0.65 0.15 30); /* Red for revising */
+  
+  /* Action Buttons */
+  --btn-primary-bg: oklch(0.15 0 0); /* Black primary button */
+  --btn-primary-text: oklch(1 0 0); /* White text */
+  --btn-primary-hover: oklch(0.25 0 0); /* Dark gray on hover */
+  --btn-approve-bg: oklch(0.6 0.15 142); /* Green approve button */
+  --btn-approve-text: oklch(1 0 0); /* White text */
+  --btn-delete-bg: oklch(0.6 0.2 25); /* Red delete button */
+  --btn-delete-text: oklch(1 0 0); /* White text */
+  
+  /* Notifications & Alerts */
+  --alert-info-bg: oklch(0.95 0.05 240); /* Light blue background */
+  --alert-info-border: oklch(0.8 0.1 240); /* Blue border */
+  --alert-info-text: oklch(0.3 0.15 240); /* Dark blue text */
+  --alert-success-bg: oklch(0.95 0.05 142); /* Light green background */
+  --alert-success-border: oklch(0.8 0.1 142); /* Green border */
+  --alert-success-text: oklch(0.3 0.15 142); /* Dark green text */
+  
+  /* Typography */
+  --text-primary: oklch(0.15 0 0); /* Main text color */
+  --text-secondary: oklch(0.5 0 0); /* Secondary text color */
+  --text-muted: oklch(0.65 0 0); /* Muted text (timestamps, etc.) */
+  --text-link: oklch(0.5 0.15 240); /* Link color */
+  
+  /* Interactive Elements */
+  --drag-handle: oklch(0.7 0 0); /* Gray drag dots */
+  --badge-bg: oklch(0.9 0 0); /* Light gray badge background */
+  --badge-text: oklch(0.3 0 0); /* Dark gray badge text */
+  --dropdown-trigger: oklch(0.7 0 0); /* Three-dot menu color */
+  
+  /* Layout Spacing */
+  --section-gap: 2rem; /* Gap between task sections */
+  --card-padding: 1rem; /* Internal card padding */
+  --card-gap: 0.75rem; /* Gap between cards */
 }
 
 .dark {
@@ -73,6 +130,14 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.269 0 0);
   --sidebar-ring: oklch(0.439 0 0);
+
+  /* Dark mode overrides for OffMenu design system */
+  --header-bg: oklch(0.18 0 0);
+  --task-card-bg: oklch(0.2 0 0);
+  --task-card-border: oklch(0.3 0 0);
+  --text-primary: oklch(0.9 0 0);
+  --text-secondary: oklch(0.7 0 0);
+  --text-muted: oklch(0.6 0 0);
 }
 
 .theme-login-one {
@@ -170,6 +235,44 @@
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
 
+  /* OffMenu Design System Color Mappings */
+  --color-header-bg: var(--header-bg);
+  --color-header-border: var(--header-border);
+  --color-nav-text: var(--nav-text);
+  --color-nav-text-active: var(--nav-text-active);
+  --color-nav-indicator: var(--nav-indicator);
+  --color-task-card-bg: var(--task-card-bg);
+  --color-task-card-border: var(--task-card-border);
+  --color-task-card-hover: var(--task-card-hover);
+  --color-task-card-shadow: var(--task-card-shadow);
+  --color-status-in-progress: var(--status-in-progress);
+  --color-status-up-next: var(--status-up-next);
+  --color-status-backlog: var(--status-backlog);
+  --color-status-approved: var(--status-approved);
+  --color-status-waiting: var(--status-waiting);
+  --color-status-revising: var(--status-revising);
+  --color-btn-primary-bg: var(--btn-primary-bg);
+  --color-btn-primary-text: var(--btn-primary-text);
+  --color-btn-primary-hover: var(--btn-primary-hover);
+  --color-btn-approve-bg: var(--btn-approve-bg);
+  --color-btn-approve-text: var(--btn-approve-text);
+  --color-btn-delete-bg: var(--btn-delete-bg);
+  --color-btn-delete-text: var(--btn-delete-text);
+  --color-alert-info-bg: var(--alert-info-bg);
+  --color-alert-info-border: var(--alert-info-border);
+  --color-alert-info-text: var(--alert-info-text);
+  --color-alert-success-bg: var(--alert-success-bg);
+  --color-alert-success-border: var(--alert-success-border);
+  --color-alert-success-text: var(--alert-success-text);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-link: var(--text-link);
+  --color-drag-handle: var(--drag-handle);
+  --color-badge-bg: var(--badge-bg);
+  --color-badge-text: var(--badge-text);
+  --color-dropdown-trigger: var(--dropdown-trigger);
+
   @keyframes accordion-down {
     from {
       height: 0;
@@ -195,5 +298,147 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* OffMenu Component Styles */
+@layer components {
+  /* Project Header Styles */
+  .project-header {
+    @apply bg-[var(--color-header-bg)] border-b border-[var(--color-header-border)] px-6 py-4;
+  }
+  
+  .project-title {
+    @apply text-xl font-semibold text-[var(--color-text-primary)];
+  }
+  
+  .project-subtitle {
+    @apply text-sm text-[var(--color-text-secondary)];
+  }
+  
+  /* Navigation Tabs */
+  .nav-tabs {
+    @apply flex border-b border-[var(--color-header-border)];
+  }
+  
+  .nav-tab {
+    @apply px-4 py-3 text-sm font-medium text-[var(--color-nav-text)] hover:text-[var(--color-nav-text-active)] transition-colors relative;
+  }
+  
+  .nav-tab.active {
+    @apply text-[var(--color-nav-text-active)];
+  }
+  
+  .nav-tab.active::after {
+    @apply absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--color-nav-indicator)] content-[''];
+  }
+  
+  /* Task Cards */
+  .task-card {
+    @apply bg-[var(--color-task-card-bg)] border border-[var(--color-task-card-border)] rounded-lg shadow-sm hover:bg-[var(--color-task-card-hover)] transition-colors;
+    padding: var(--card-padding);
+    margin-bottom: var(--card-gap);
+  }
+  
+  .task-card.expanded {
+    @apply shadow-md;
+  }
+  
+  /* Task Status Indicators */
+  .status-dot {
+    @apply w-2 h-2 rounded-full inline-block;
+  }
+  
+  .status-dot.in-progress {
+    @apply bg-[var(--color-status-in-progress)];
+  }
+  
+  .status-dot.up-next {
+    @apply bg-[var(--color-status-up-next)];
+  }
+  
+  .status-dot.backlog {
+    @apply bg-[var(--color-status-backlog)];
+  }
+  
+  .status-dot.approved {
+    @apply bg-[var(--color-status-approved)];
+  }
+  
+  .status-dot.waiting {
+    @apply bg-[var(--color-status-waiting)];
+  }
+  
+  .status-dot.revising {
+    @apply bg-[var(--color-status-revising)];
+  }
+  
+  /* Action Buttons */
+  .btn-primary {
+    @apply bg-[var(--color-btn-primary-bg)] text-[var(--color-btn-primary-text)] hover:bg-[var(--color-btn-primary-hover)] px-4 py-2 rounded-md font-medium transition-colors;
+  }
+  
+  .btn-approve {
+    @apply bg-[var(--color-btn-approve-bg)] text-[var(--color-btn-approve-text)] hover:brightness-110 px-3 py-1.5 rounded text-sm font-medium transition-all;
+  }
+  
+  .btn-delete {
+    @apply bg-[var(--color-btn-delete-bg)] text-[var(--color-btn-delete-text)] hover:brightness-110 px-3 py-1.5 rounded text-sm font-medium transition-all;
+  }
+  
+  /* Notification Alerts */
+  .alert-info {
+    @apply bg-[var(--color-alert-info-bg)] border border-[var(--color-alert-info-border)] text-[var(--color-alert-info-text)] px-4 py-3 rounded-md;
+  }
+  
+  .alert-success {
+    @apply bg-[var(--color-alert-success-bg)] border border-[var(--color-alert-success-border)] text-[var(--color-alert-success-text)] px-4 py-3 rounded-md;
+  }
+  
+  /* Typography */
+  .text-primary {
+    @apply text-[var(--color-text-primary)];
+  }
+  
+  .text-secondary {
+    @apply text-[var(--color-text-secondary)];
+  }
+  
+  .text-muted {
+    @apply text-[var(--color-text-muted)];
+  }
+  
+  .text-link {
+    @apply text-[var(--color-text-link)] hover:underline;
+  }
+  
+  /* Interactive Elements */
+  .drag-handle {
+    @apply text-[var(--color-drag-handle)] hover:text-[var(--color-text-secondary)] cursor-grab active:cursor-grabbing;
+  }
+  
+  .badge {
+    @apply bg-[var(--color-badge-bg)] text-[var(--color-badge-text)] px-2 py-1 rounded-full text-xs font-medium;
+  }
+  
+  .dropdown-trigger {
+    @apply text-[var(--color-dropdown-trigger)] hover:text-[var(--color-text-secondary)] p-1 rounded hover:bg-[var(--color-task-card-hover)] transition-colors;
+  }
+  
+  /* Layout Sections */
+  .task-section {
+    margin-bottom: var(--section-gap);
+  }
+  
+  .task-section-header {
+    @apply flex items-center justify-between mb-4;
+  }
+  
+  .task-section-title {
+    @apply text-sm font-medium text-[var(--color-text-secondary)] uppercase tracking-wide;
+  }
+  
+  .task-count {
+    @apply text-xs text-[var(--color-text-muted)] bg-[var(--color-badge-bg)] px-2 py-1 rounded-full;
   }
 }
