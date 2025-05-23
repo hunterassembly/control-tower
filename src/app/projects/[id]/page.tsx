@@ -1,5 +1,6 @@
 'use client';
 
+import { use } from 'react';
 import { useProject, useProjectTasks, useTaskCounts, TaskWithDetails } from '@/lib/hooks/useProjectData';
 
 /**
@@ -8,7 +9,7 @@ import { useProject, useProjectTasks, useTaskCounts, TaskWithDetails } from '@/l
  */
 
 interface ProjectPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 function TaskCard({ task, userRole }: { task: TaskWithDetails; userRole: 'admin' | 'designer' }) {
@@ -132,7 +133,8 @@ function TaskSection({
 }
 
 export default function ProjectPage({ params }: ProjectPageProps) {
-  const projectId = params.id;
+  // Fix for Next.js 15: unwrap params Promise using React.use()
+  const { id: projectId } = use(params);
   
   // Fetch project and task data
   const { data: project, isLoading: projectLoading, error: projectError } = useProject(projectId);
@@ -158,6 +160,13 @@ export default function ProjectPage({ params }: ProjectPageProps) {
           <p className="text-lg text-destructive">
             Error: {projectError?.message || tasksError?.message}
           </p>
+          <details className="mt-4 text-left">
+            <summary className="cursor-pointer text-sm text-muted">Debug Info</summary>
+            <pre className="mt-2 text-xs bg-gray-100 p-2 rounded">
+              Project Error: {JSON.stringify(projectError, null, 2)}
+              Tasks Error: {JSON.stringify(tasksError, null, 2)}
+            </pre>
+          </details>
         </div>
       </div>
     );
