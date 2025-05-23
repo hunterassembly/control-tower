@@ -34,11 +34,10 @@ interface ProjectPageProps {
   params: Promise<{ id: string }>;
 }
 
-function TaskCard({ task, userRole, onTaskUpdate, dragHandleProps, isDragging }: { 
+function TaskCard({ task, userRole, onTaskUpdate, isDragging }: { 
   task: TaskWithDetails; 
   userRole: 'admin' | 'designer';
   onTaskUpdate?: () => void;
-  dragHandleProps?: any;
   isDragging?: boolean;
 }) {
   const formatDate = (dateString: string) => {
@@ -150,12 +149,19 @@ function TaskCard({ task, userRole, onTaskUpdate, dragHandleProps, isDragging }:
 
   return (
     <div 
-      className={`bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-all duration-200 cursor-pointer ${
+      className={`group bg-white border border-gray-200 rounded-lg p-4 transition-all duration-200 ${
+        isDragging 
+          ? 'shadow-lg ring-2 ring-blue-400 cursor-grabbing' 
+          : 'hover:shadow-sm cursor-grab hover:ring-1 hover:ring-gray-300'
+      } ${
         isExpanded ? 'ring-2 ring-blue-500 ring-opacity-20 shadow-md' : ''
-      } ${isDragging ? 'shadow-lg ring-2 ring-blue-300' : ''}`}
+      }`}
       onClick={(e) => {
-        // Don't expand if clicking on dropdown or buttons or if dragging
-        if (!(e.target as HTMLElement).closest('.dropdown-menu, .action-button') && !isDragging) {
+        // Don't expand if clicking on dropdown, buttons, or if dragging
+        const target = e.target as HTMLElement;
+        const isInteractiveElement = target.closest('.dropdown-menu, .action-button, button, input, a');
+        
+        if (!isInteractiveElement && !isDragging) {
           setIsExpanded(!isExpanded);
         }
       }}
@@ -167,12 +173,9 @@ function TaskCard({ task, userRole, onTaskUpdate, dragHandleProps, isDragging }:
       }}
     >
       <div className="flex items-start gap-3">
-        {/* Drag Handle */}
-        <div 
-          className={`mt-1 text-gray-400 cursor-grab active:cursor-grabbing ${isDragging ? 'cursor-grabbing' : ''}`}
-          {...(dragHandleProps || {})}
-        >
-          <svg width="6" height="10" viewBox="0 0 6 10" fill="currentColor">
+                 {/* Drag Handle - Visual Indicator */}
+        <div className="mt-1 text-gray-400 pointer-events-none group-hover:text-gray-600 transition-colors">
+          <svg width="6" height="10" viewBox="0 0 6 10" fill="currentColor" className="opacity-60 group-hover:opacity-80 transition-opacity">
             <circle cx="1" cy="2" r="1"/>
             <circle cx="1" cy="5" r="1"/>
             <circle cx="1" cy="8" r="1"/>
@@ -514,12 +517,11 @@ function DraggableTaskCard({ task, userRole, onTaskUpdate }: {
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes}>
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
       <TaskCard 
         task={task} 
         userRole={userRole} 
         onTaskUpdate={onTaskUpdate}
-        dragHandleProps={listeners}
         isDragging={isDragging}
       />
     </div>
@@ -546,7 +548,13 @@ function TaskSection({
   const [activeId, setActiveId] = useState<string | null>(null);
   
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // Require 8px movement before activating drag
+        delay: 100, // 100ms delay to prevent accidental drags during clicks
+        tolerance: 5, // Allow 5px tolerance while holding
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
