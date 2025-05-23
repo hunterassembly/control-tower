@@ -21,10 +21,11 @@ This document is the shared brain-dump playground for both Planner and Executor 
 _Add new items to the list below as `- [YYYY-MM-DD] Your wisdom here`_
 
 - [2025-05-19] Initial project scaffolding created by Planner.
+- [2025-05-19] GitHub Actions removed from project scope per user request - using manual verification and testing instead for MVP.
 
 ### Master Project Board (Overall Ordering & Status)
 
-- [ ] 01 — Backend Foundation & Schema (`feature/backend-foundation-schema`)
+- [ ] in-progress 01 — Backend Foundation & Schema (`feature/backend-foundation-schema`)
 - [ ] 02 — Login & Invite Flow (`feature/login-and-invite-flow`)
 - [ ] 03 — Projects Dashboard (`feature/projects-dashboard`)
 - [ ] 04 — Project Task List (`feature/project-task-list`)

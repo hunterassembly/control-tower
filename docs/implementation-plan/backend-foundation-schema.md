@@ -22,8 +22,8 @@ The entire MVP rests on a solid database schema, RLS policies, and a bootstrappe
     - `task_asset`: SELECT if member of project. INSERT by Designers. DELETE by uploader or Admin.
     - `timeline`: SELECT if member of project. INSERT by system/functions triggered by user actions. NO UPDATE/DELETE.
     - `project_member`: SELECT by Admins or self. INSERT/UPDATE/DELETE by Admins (or self for leaving project - out of MVP scope?).
-3. Automating migrations via `supabase db push` in CI so we never diverge. Ensure migration files are clearly named and atomic.
-4. Wiring up CI/CD early to catch TypeScript and linting errors on every PR.
+3. Automating migrations via `supabase db push` so we maintain consistency between local and remote. Ensure migration files are clearly named and atomic.
+4. ~~Wiring up CI/CD early to catch TypeScript and linting errors on every PR.~~ **[Removed - using manual verification for MVP]**
 5. Ensuring all tables have `created_at` and `updated_at` (where applicable) timestamps, managed by Postgres defaults.
 6. UUIDs for all primary keys (`id`) for obscurity and to prevent enumeration attacks.
 
@@ -64,20 +64,18 @@ The entire MVP rests on a solid database schema, RLS policies, and a bootstrappe
     - Define helper functions like `is_project_member(project_id uuid, user_role project_role_enum)` and `is_project_admin(project_id uuid)` in a separate migration or preamble to RLS.
 - [x] **(6)** Seed initial data script. Created `supabase/migrations/0003_seed_data.sql` and applied it, populating the local DB with an organization, project, project members (using provided UUIDs), and sample tasks.
     - Create one `organization`.
-- [x] **(7)** Add GitHub Actions workflow: Created `.github/workflows/ci.yml` to install dependencies (npm), run lint, run tests (placeholder), and perform `supabase db push --dry-run`. User needs to configure `SUPABASE_ACCESS_TOKEN` and `SUPABASE_CI_DB_PASSWORD` secrets in GitHub.
-- [ ] **(8)** Verify local build, run API smoke tests (manual for now), commit & push all `supabase/migrations` and `.github/workflows/ci.yml`; open Draft PR.
+- [ ] **(7)** Verify local build works (`npm run dev` boots without errors), run manual API smoke tests, commit & push all `supabase/migrations`; open Draft PR.
 
 ### Acceptance Criteria
-1. Running `pnpm dev` boots a Next.js app without errors.
 1. Running `npm run dev` boots a Next.js app without errors.
-2. `supabase test` passes all RLS tests for each role.
-3. GitHub Actions shows green for lint, type-check, and db push dry-run.
+2. `supabase test` passes all RLS tests for each role (or manual verification of RLS policies).
+3. All migrations are committed and pushed to the feature branch.
 
 ## Project Status Board
 - [x] Planning ✅ _(you're here, and now it's more planned!)_
 - [x] Branch created
 - [x] Schema & RLS done
-- [ ] CI pipeline passes
+- [ ] Local build verified and PR opened
 - [ ] Ready for merge
 
 ## Current Status / Progress Tracking
@@ -90,10 +88,10 @@ The entire MVP rests on a solid database schema, RLS policies, and a bootstrappe
 - Successfully started local Supabase services and applied `0001_initial_schema.sql` migration after troubleshooting port conflicts and a problematic auto-generated auth migration.
 - Created `supabase/migrations/0002_rls_policies.sql` with RLS policies for all tables and successfully applied it to the local database.
 - Created and applied `supabase/migrations/0003_seed_data.sql` to populate the database with initial sample data for organization, project, members, and tasks.
-- Defined GitHub Actions workflow in `.github/workflows/ci.yml` for linting, testing (placeholder), and Supabase dry-run. Awaiting secret configuration by user.
+- **[2025-05-19 - Planner Update]**: GitHub Actions workflow removed from scope per user request. Ready to proceed with manual verification and PR creation.
 
 ## Executor's Feedback or Assistance Requests
-- User needs to configure `SUPABASE_ACCESS_TOKEN` and `SUPABASE_CI_DB_PASSWORD` secrets in the GitHub repository for the CI workflow to function correctly.
-- User should review the `npm test` script in `package.json` and ensure it passes or is a suitable placeholder.
+- ~~User needs to configure `SUPABASE_ACCESS_TOKEN` and `SUPABASE_CI_DB_PASSWORD` secrets in the GitHub repository for the CI workflow to function correctly.~~
+- ~~User should review the `npm test` script in `package.json` and ensure it passes or is a suitable placeholder.~~
 
 --- 
