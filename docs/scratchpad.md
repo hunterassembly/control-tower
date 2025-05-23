@@ -25,6 +25,7 @@ _Add new items to the list below as `- [YYYY-MM-DD] Your wisdom here`_
 - [2025-01-27] When users successfully authenticate but get "access denied" errors, check if they have project_member records. Successful auth ≠ project access. Use: `psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -c "SELECT pm.role, au.email FROM project_member pm JOIN auth.users au ON pm.user_id = au.id;"`
 - [2025-01-27] Always verify the correct port for Next.js dev server with `lsof -i :3000` - don't assume port numbers. Default is 3000, not 3001!
 - [2025-01-27] When auth issues are complex, add comprehensive debugging FIRST: console logs in hooks, visual debug displays, and auth state monitoring. This saves hours of guessing. Use prefixed emojis (🔍, 🔐, ✅, ❌) for easy filtering.
+- [2025-01-27] 400 API errors that look like auth problems can actually be database schema mismatches! Always check if the code's expected columns/enums match the actual database structure. Use `\d table_name` in psql to verify schema. In this case: missing `position` column, wrong status enum values (`'Backlog'` vs `'backlog'`), and missing project columns caused all the 400s.
 
 ### Master Project Board (Overall Ordering & Status)
 

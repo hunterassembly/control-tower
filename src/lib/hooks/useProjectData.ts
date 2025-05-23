@@ -183,13 +183,17 @@ export function useProjectTasks(projectId: string) {
       
       if (assigneeIds.length > 0) {
         const { data: assignees } = await supabase
-          .from('auth_user')
-          .select('id, full_name, email')
+          .from('auth.users')
+          .select('id, raw_user_meta_data, email')
           .in('id', assigneeIds);
         
         if (assignees) {
           assigneeMap = assignees.reduce((acc, assignee) => {
-            acc[assignee.id] = assignee;
+            acc[assignee.id] = {
+              id: assignee.id,
+              full_name: assignee.raw_user_meta_data?.full_name || null,
+              email: assignee.email
+            };
             return acc;
           }, {} as Record<string, any>);
         }
