@@ -94,7 +94,7 @@ Authentication is the literal front door to our shiny new platform. This slice f
 ## Project Status Board
 - [x] Planning ✅
 - [x] Branch created (`feature/login-and-invite-flow`)
-- [ ] `invite_token` table and RLS created
+- [x] `invite_token` table and RLS created
 - [x] `/login` page UI implemented
 - [ ] Magic-link client-side logic works (triggers email, `onAuthStateChange` fires)
 - [ ] Invite token extraction from URL works
@@ -116,7 +116,15 @@ Authentication is the literal front door to our shiny new platform. This slice f
   - Updated copy to use "OffMenu" branding and magic-link messaging.
   - Added placeholder area for success/error messages.
   - Dev server running at http://localhost:3000/login and page renders correctly.
-- **Next up**: Need to create the `invite_token` table in Supabase (Task 2) before implementing magic-link logic.
+- **Task (2) ✅ COMPLETE**: Created `invite_token` table in Supabase.
+  - Created migration file `supabase/migrations/0004_invite_token_table.sql`.
+  - Applied migration directly without data loss using psql.
+  - Table created with all required columns: id, token, email, project_id, role, expires_at, created_at, used_at, voided_at.
+  - Added 5 performance indexes including unique constraint on token.
+  - Implemented 3 RLS policies for security: admin management, token lookup, system updates.
+  - Created helper function `is_project_admin()` for role checking.
+  - Database now has 9 tables total, all existing data preserved.
+- **Next up**: Implement Supabase magic-link client-side logic (Task 4).
 
 ## Executor's Feedback or Assistance Requests
 *(empty)*
