@@ -157,14 +157,21 @@ export function LoginForm({
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('🔍 DEBUG - Auth state change event:', event)
+        console.log('🔍 DEBUG - Current URL on auth change:', window.location.href)
+        console.log('🔍 DEBUG - Search params on auth change:', window.location.search)
+        console.log('🔍 DEBUG - Hash on auth change:', window.location.hash)
+        
         if (event === 'SIGNED_IN' && session) {
-          console.log('User signed in:', session.user.email)
+          console.log('✅ User signed in:', session.user.email)
           
           // Check for invite token in URL
           const inviteToken = searchParams.get('invite_token')
-          console.log('Invite token after auth:', inviteToken) // Debug log
+          console.log('🔍 DEBUG - Invite token after auth:', inviteToken)
+          console.log('🔍 DEBUG - All search params:', Object.fromEntries(searchParams.entries()))
           
           if (inviteToken) {
+            console.log('🎯 Processing invite token:', inviteToken)
             setMessage({
               type: "info",
               text: "🔄 Verifying your invitation..."
@@ -192,10 +199,11 @@ export function LoginForm({
                 type: "error",
                 text: `❌ ${result.error || "Invalid or expired invitation link"}`
               })
-              console.error('Invite token redemption failed:', result.error)
+              console.error('❌ Invite token redemption failed:', result.error)
               // Stay on login page to show error
             }
           } else {
+            console.log('🔍 No invite token found - checking existing memberships')
             // No invite token - check if user is already a member of any project
             const { hasMemberships, error } = await checkProjectMemberships()
 
@@ -206,6 +214,7 @@ export function LoginForm({
               })
             } else if (hasMemberships) {
               // User has existing project memberships
+              console.log('✅ User has existing memberships, redirecting to projects')
               setMessage({
                 type: "success",
                 text: "✅ Welcome back! Redirecting to your projects..."
@@ -213,6 +222,7 @@ export function LoginForm({
               setTimeout(() => router.push('/projects'), 1500)
             } else {
               // New user with no project memberships
+              console.log('ℹ️ New user with no memberships')
               setMessage({
                 type: "info",
                 text: "✅ Login successful! Please wait for a project invitation to get started."
@@ -245,29 +255,37 @@ export function LoginForm({
     try {
       // Get invite token from URL if present
       const inviteToken = searchParams.get('invite_token')
-      console.log('Invite token from URL:', inviteToken) // Debug log
+      console.log('🔍 DEBUG - Invite token from URL:', inviteToken)
       
       // Construct redirect URL with invite token preserved
+      const baseUrl = window.location.origin
       const redirectUrl = inviteToken 
-        ? `${window.location.origin}/login?invite_token=${inviteToken}`
-        : `${window.location.origin}/login`
+        ? `${baseUrl}/login?invite_token=${inviteToken}`
+        : `${baseUrl}/login`
       
-      console.log('Email redirect URL:', redirectUrl) // Debug log
+      console.log('🔍 DEBUG - Base URL:', baseUrl)
+      console.log('🔍 DEBUG - Constructed redirect URL:', redirectUrl)
+      console.log('🔍 DEBUG - Current window.location:', window.location.href)
+
+      const authOptions = {
+        emailRedirectTo: redirectUrl
+      }
+      
+      console.log('🔍 DEBUG - Auth options:', authOptions)
 
       const { error } = await supabase.auth.signInWithOtp({
         email: email.trim(),
-        options: {
-          emailRedirectTo: redirectUrl
-        }
+        options: authOptions
       })
 
       if (error) {
-        console.error('Supabase auth error:', error)
+        console.error('❌ Supabase auth error:', error)
         setMessage({
           type: "error",
           text: error.message || "Failed to send magic link"
         })
       } else {
+        console.log('✅ Magic link sent successfully')
         if (inviteToken) {
           setMessage({
             type: "success",
@@ -282,7 +300,7 @@ export function LoginForm({
         setEmail("") // Clear the email field
       }
     } catch (err) {
-      console.error('Unexpected error:', err)
+      console.error('❌ Unexpected error:', err)
       setMessage({
         type: "error",
         text: "An unexpected error occurred. Please try again."

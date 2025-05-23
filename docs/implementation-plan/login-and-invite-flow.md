@@ -147,6 +147,12 @@ Authentication is the literal front door to our shiny new platform. This slice f
     - Error: Displays clear error messages for invalid/expired tokens.
     - No token: Checks existing memberships and provides appropriate messaging.
     - Added `checkProjectMemberships()` function for user onboarding flow.
+  - **🐛 FIXED**: Major bug where invite tokens were lost during magic link redirect.
+    - **Issue**: `emailRedirectTo` URL wasn't properly preserving invite token parameters.
+    - **Solution**: Fixed redirect URL construction to maintain invite token through auth flow.
+    - **UX Improvements**: Added emojis, clearer messaging, longer success display time, debugging logs.
+    - **Testing**: Added mock function for `test-invite-123` token to test complete flow without deployed Edge Function.
+    - **✅ TESTED**: User confirmed issue and solution works with proper invitation confirmation messaging.
 - **Next up**: Admin invite token generation mechanism (Task 8).
 
 ## Executor's Feedback or Assistance Requests
