@@ -4,6 +4,27 @@ import { use, useState, useEffect, useRef } from 'react';
 import { useProject, useProjectTasks, useTaskCounts, useAuthDebug, TaskWithDetails } from '@/lib/hooks/useProjectData';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import {
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 /**
  * Project Tasks Page - Main task management interface matching target design
@@ -13,10 +34,12 @@ interface ProjectPageProps {
   params: Promise<{ id: string }>;
 }
 
-function TaskCard({ task, userRole, onTaskUpdate }: { 
+function TaskCard({ task, userRole, onTaskUpdate, dragHandleProps, isDragging }: { 
   task: TaskWithDetails; 
   userRole: 'admin' | 'designer';
   onTaskUpdate?: () => void;
+  dragHandleProps?: any;
+  isDragging?: boolean;
 }) {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -129,23 +152,26 @@ function TaskCard({ task, userRole, onTaskUpdate }: {
     <div 
       className={`bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-all duration-200 cursor-pointer ${
         isExpanded ? 'ring-2 ring-blue-500 ring-opacity-20 shadow-md' : ''
-      }`}
+      } ${isDragging ? 'shadow-lg ring-2 ring-blue-300' : ''}`}
       onClick={(e) => {
-        // Don't expand if clicking on dropdown or buttons
-        if (!(e.target as HTMLElement).closest('.dropdown-menu, .action-button')) {
+        // Don't expand if clicking on dropdown or buttons or if dragging
+        if (!(e.target as HTMLElement).closest('.dropdown-menu, .action-button') && !isDragging) {
           setIsExpanded(!isExpanded);
         }
       }}
       tabIndex={0}
       onKeyDown={(e) => {
-        if (e.key === 'Enter' && !isExpanded) {
+        if (e.key === 'Enter' && !isExpanded && !isDragging) {
           setIsExpanded(true);
         }
       }}
     >
       <div className="flex items-start gap-3">
         {/* Drag Handle */}
-        <div className="mt-1 text-gray-400 cursor-grab">
+        <div 
+          className={`mt-1 text-gray-400 cursor-grab active:cursor-grabbing ${isDragging ? 'cursor-grabbing' : ''}`}
+          {...(dragHandleProps || {})}
+        >
           <svg width="6" height="10" viewBox="0 0 6 10" fill="currentColor">
             <circle cx="1" cy="2" r="1"/>
             <circle cx="1" cy="5" r="1"/>
@@ -467,6 +493,39 @@ function TaskCard({ task, userRole, onTaskUpdate }: {
   );
 }
 
+function DraggableTaskCard({ task, userRole, onTaskUpdate }: { 
+  task: TaskWithDetails; 
+  userRole: 'admin' | 'designer';
+  onTaskUpdate?: () => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: task.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes}>
+      <TaskCard 
+        task={task} 
+        userRole={userRole} 
+        onTaskUpdate={onTaskUpdate}
+        dragHandleProps={listeners}
+        isDragging={isDragging}
+      />
+    </div>
+  );
+}
+
 function TaskSection({ 
   title, 
   tasks, 
@@ -484,6 +543,59 @@ function TaskSection({
   userRole: 'admin' | 'designer';
   onTaskUpdate: () => void;
 }) {
+  const [activeId, setActiveId] = useState<string | null>(null);
+  
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    setActiveId(null);
+    const { active, over } = event;
+
+    if (active.id !== over?.id) {
+      const oldIndex = tasks.findIndex(task => task.id === active.id);
+      const newIndex = tasks.findIndex(task => task.id === over?.id);
+
+      if (oldIndex !== -1 && newIndex !== -1) {
+        // Optimistically update UI
+        const newTasks = arrayMove(tasks, oldIndex, newIndex);
+        
+        try {
+          // Update positions in database
+          const updates = newTasks.map((task, index) => ({
+            id: task.id,
+            position: index + 1,
+          }));
+
+          // Batch update all positions
+          for (const update of updates) {
+            await supabase
+              .from('task')
+              .update({ position: update.position })
+              .eq('id', update.id);
+          }
+
+          // Refresh data
+          onTaskUpdate();
+          console.log('✅ Task positions updated successfully');
+        } catch (error) {
+          console.error('❌ Failed to update task positions:', error);
+          alert('Failed to update task order. Please try again.');
+          // Refresh to restore original order
+          onTaskUpdate();
+        }
+      }
+    }
+  };
+
   return (
     <section className="space-y-3">
       {/* Section Header */}
@@ -513,16 +625,40 @@ function TaskSection({
       
       {/* Task Cards */}
       {isExpanded && (
-        <div className="space-y-3 ml-5">
-          {tasks.length > 0 ? (
-            tasks.map(task => (
-              <TaskCard key={task.id} task={task} userRole={userRole} onTaskUpdate={onTaskUpdate} />
-            ))
-          ) : (
-            <div className="text-gray-500 text-sm italic">
-              No {title.toLowerCase()} tasks
-            </div>
-          )}
+        <div className="ml-5">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext items={tasks.map(task => task.id)} strategy={verticalListSortingStrategy}>
+              <div className="space-y-3">
+                {tasks.length > 0 ? (
+                  tasks.map(task => (
+                    <DraggableTaskCard key={task.id} task={task} userRole={userRole} onTaskUpdate={onTaskUpdate} />
+                  ))
+                ) : (
+                  <div className="text-gray-500 text-sm italic">
+                    No {title.toLowerCase()} tasks
+                  </div>
+                )}
+              </div>
+            </SortableContext>
+            
+            <DragOverlay>
+              {activeId ? (
+                <div className="opacity-90 transform rotate-3 shadow-lg">
+                  <TaskCard 
+                    task={tasks.find(task => task.id === activeId)!} 
+                    userRole={userRole} 
+                    onTaskUpdate={onTaskUpdate}
+                    isDragging={true}
+                  />
+                </div>
+              ) : null}
+            </DragOverlay>
+          </DndContext>
         </div>
       )}
     </section>
