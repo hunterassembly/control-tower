@@ -99,7 +99,7 @@ Authentication is the literal front door to our shiny new platform. This slice f
 - [x] Magic-link client-side logic works (triggers email, `onAuthStateChange` fires)
 - [x] Invite token extraction from URL works
 - [x] Edge Function `consume-invite-token` created and tested
-- [x] Client-side handling of `consume-invite-token` response (redirects, errors) works
+- [x] Client-side handling of `consume-invite-token` response (redirects, errors) works ✅
 - [ ] Admin invite token generation mechanism implemented (TBD: UI or Function-only for MVP)
 - [ ] Postmark integration for sending invite emails works
 - [ ] Slack notification stub for new invites added

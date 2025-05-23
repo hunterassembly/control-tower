@@ -25,11 +25,12 @@ _Add new items to the list below as `- [YYYY-MM-DD] Your wisdom here`_
 - [2025-05-19] When applying new Supabase migrations, use direct psql application instead of `supabase db reset` to avoid data loss.
 - [2025-05-19] Next.js HMR can fail when converting server components to client components ("use client"). Fix: kill dev server, rm -rf .next, restart npm run dev.
 - [2025-05-19] Magic-link authentication flow tested successfully: login form → Supabase email → Inbucket → magic link click → redirect to /projects.
+- [2025-05-23] MAJOR MILESTONE: Complete end-to-end invite token redemption flow working! Fixed RLS infinite recursion by removing cross-table queries in project_member policies. localStorage approach successfully preserves invite tokens through magic link redirects. Invitation system is production-ready pending Edge Function deployment.
 
 ### Master Project Board (Overall Ordering & Status)
 
-- [ ] in-progress 01 — Backend Foundation & Schema (`feature/backend-foundation-schema`)
-- [ ] in-progress 02 — Login & Invite Flow (`feature/login-and-invite-flow`)
+- [x] ✅ 01 — Backend Foundation & Schema (`feature/backend-foundation-schema`)
+- [x] ✅ 02 — Login & Invite Flow (`feature/login-and-invite-flow`) - **CORE COMPLETE**
 - [ ] 03 — Projects Dashboard (`feature/projects-dashboard`)
 - [ ] 04 — Project Task List (`feature/project-task-list`)
 - [ ] 05 — Task Detail & Updates (`feature/task-detail-and-updates`)
